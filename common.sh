@@ -431,6 +431,7 @@ function getQueryForGame()
             GROUP_CONCAT(DISTINCT ts.\`name\`) AS 'game_type_name[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
+            IF(gy.game_id IS NULL, 0, 1) AS is_yummy, \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             (SELECT mss.total_score FROM ${GAME_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
