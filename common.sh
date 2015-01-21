@@ -9,7 +9,6 @@ function deleteAllIndex()
 function deleteAllCurrentIndex()
 {
     indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
-	local indexes=($1)
     for indexName in "${indexes[@]}"
     do
         curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
@@ -111,8 +110,8 @@ function importMedia()
 
         }
     }'
-    echo "${jsonString}" | cat > '/tmp/bbb'
-    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @'/tmp/bbb'
+    echo "${jsonString}" | cat > '../../tmp'
+    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @'../../tmp'
 }
 
 function getMappingForBook()
