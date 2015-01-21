@@ -1,6 +1,5 @@
 #!/bin/bash
 source "common.sh"
-deleteAllIndex
 #deleteCurrentIndex
 #deleteAllIndex
 deleteAllCurrentIndex
