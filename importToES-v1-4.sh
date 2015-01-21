@@ -1,7 +1,7 @@
 #!/bin/bash
 source "common.sh"
-#deleteAllIndex
-deleteCurrentIndex
+deleteAllIndex
+#deleteCurrentIndex
 importMedia "Book" "book" "$ES_BOOK_INDEX"
 importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
 importMedia "Game" "game" "$ES_GAME_INDEX"
