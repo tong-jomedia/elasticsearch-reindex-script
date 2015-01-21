@@ -6,7 +6,18 @@ function deleteAllIndex()
 {
     curl -XDELETE 'http://'$ES_HOST':'$ES_PORT'/_all'
 }
+function deleteAllCurrentIndex()
+{
+    indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
+	local indexes=($1)
+    for indexName in "${indexes[@]}"
+    do
+        curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
+        curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
+        curl -XDELETE $ES_HOST':'$ES_PORT'/'$indexName
+    done
 
+}
 function deleteCurrentIndex()
 {
     #indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
