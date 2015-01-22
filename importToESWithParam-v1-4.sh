@@ -38,7 +38,7 @@ while true; do
             break;;
         [a]ll ) 
             echo "Reindex All"; 
-            deleteAllIndex
+            deleteAllCurrentIndex
             importMedia "Book" "book" "$ES_BOOK_INDEX"
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
             importMedia "Game" "game" "$ES_GAME_INDEX"
@@ -48,7 +48,7 @@ while true; do
             break;;
         * ) 
             echo "Reindex All"; 
-            deleteAllIndex
+            deleteAllCurrentIndex
             importMedia "Book" "book" "$ES_BOOK_INDEX"
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
             importMedia "Game" "game" "$ES_GAME_INDEX"
