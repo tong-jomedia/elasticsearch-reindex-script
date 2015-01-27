@@ -51,6 +51,7 @@ function deleteIndexByVersion()
 {
     local version=($2)
 	local indexes=($1_v$version)
+    indexes="index_"${indexes}
     for indexName in "${indexes[@]}"
     do
         curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
@@ -62,7 +63,7 @@ function deleteIndexByVersion()
 function deleteAllPreviousIndexesByMedia()
 {	
     local mediaIndex=($1)
-    local nextVersionIndex="${mediaIndex}_v${nextIndexVersion}"
+    local nextVersionIndex="index_${mediaIndex}_v${nextIndexVersion}"
     local allPreviousIndexes=$(getAllPreviousIndexesByMedia "$mediaIndex")
     echo $nextVersionIndex
     for onePreviousIndex in $allPreviousIndexes 
@@ -138,8 +139,8 @@ function compareIndexCountSwitchAlias()
 {
     local exitChecking=0
     local indexPrefix=$1
-    local indexCurrent="${indexPrefix}_v${currentIndexVersion}"
-    local indexNext="${indexPrefix}_v${nextIndexVersion}"
+    local indexCurrent="index_${indexPrefix}_v${currentIndexVersion}"
+    local indexNext="index_${indexPrefix}_v${nextIndexVersion}"
 
 #    echo $indexCurrent
 #    echo $indexNext
@@ -191,16 +192,17 @@ function getCountOfIndex()
 function switchAliasByIndex()
 {
     local indexPrefix=$1
-    local indexPrev="${indexPrefix}*"
-    local indexNext="${indexPrefix}_v${nextIndexVersion}"
+    local alias="all_media_${indexPrefix}"
+    local indexPrev="index_${indexPrefix}*"
+    local indexNext="index_${indexPrefix}_v${nextIndexVersion}"
     curl -XPOST $ES_HOST':'$ES_PORT'/_aliases' -d '{
         "actions": [
             {"remove": {
-                "alias": "'$indexPrefix'",
+                "alias": "'$alias'",
                 "index": "'$indexPrev'"
             }},
             {"add": {
-                "alias": "'$indexPrefix'",
+                "alias": "'$alias'",
                 "index": "'$indexNext'"
             }}
         ]
@@ -211,7 +213,7 @@ function importMedia()
 {
     local mediaTypeName=$1
     local mediaTableName=$2
-    local indexName="${3}_v${nextIndexVersion}" 
+    local indexName="index_${3}_v${nextIndexVersion}" 
 
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
