@@ -15,6 +15,10 @@ function updateIndexVersion()
 {
     local currentIndexVersion=$1
     local newIndexVersion=$((currentIndexVersion+1))
+    if [ "$newIndexVersion" -ge "$MAX_VERSION_NUM_TO_RESET" ]
+    then
+        newIndexVersion=1
+    fi
     echo $newIndexVersion | cat > '../tmpData/indexVersion'
 }
 
@@ -81,7 +85,7 @@ function deleteAllPreviousIndexesByMedia()
 function getAllPreviousIndexesByMedia()
 {
     local mediaIndex=($1)
-    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/'$mediaIndex'*' | grep -Po $mediaIndex'_v(\d+)')
+    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/index_'$mediaIndex'*' | grep -Po 'index_'$mediaIndex'_v(\d+)')
     allIndexes=$(echo $allIndexes | tr "\n\r" "\n\r")
     echo "$allIndexes"
 }
