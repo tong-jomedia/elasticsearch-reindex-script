@@ -22,7 +22,7 @@ while true; do
         [mM]o* ) 
             echo "Reindex Movie"; 
             deleteCurrentIndex "$ES_MOVIE_INDEX";
-            importMedia "MusicSong" "music" "$ES_MOVIE_INDEX";
+            importMedia "Movie" "movie" "$ES_MOVIE_INDEX";
             break;;
         [gG]* ) 
             echo "Reindex Game"; 

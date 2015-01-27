@@ -24,7 +24,7 @@ while true; do
         [m]ovies* ) 
             echo "Reindex Movie"; 
             deleteCurrentIndex "$ES_MOVIE_INDEX";
-            importMedia "MusicSong" "music" "$ES_MOVIE_INDEX";
+            importMedia "Movie" "movie" "$ES_MOVIE_INDEX";
             break;;
         [g]ames* ) 
             echo "Reindex Game"; 
@@ -44,7 +44,7 @@ while true; do
             importMedia "Game" "game" "$ES_GAME_INDEX"
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-            #importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
+            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
             break;;
         * ) 
             echo "Reindex All"; 
@@ -54,7 +54,7 @@ while true; do
             importMedia "Game" "game" "$ES_GAME_INDEX"
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-            #importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
+            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
             break;;
     esac
 
