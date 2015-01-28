@@ -85,7 +85,7 @@ function deleteAllPreviousIndexesByMedia()
 function getAllPreviousIndexesByMedia()
 {
     local mediaIndex=($1)
-    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/index_'$mediaIndex'*' | grep -Po 'index_'$mediaIndex'_v(\d+)')
+    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/'$ENV_PREFIX'index_'$mediaIndex'*' | grep -Po $ENV_PREFIX'index_'$mediaIndex'_v(\d+)')
     allIndexes=$(echo $allIndexes | tr "\n\r" "\n\r")
     echo "$allIndexes"
 }
