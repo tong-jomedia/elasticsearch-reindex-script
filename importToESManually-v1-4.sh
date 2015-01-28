@@ -26,13 +26,8 @@ while true; do
             break;;
         [mM]o* ) 
             echo "Reindex Movie"; 
-<<<<<<< HEAD
             deleteCurrentIndex "$ES_MOVIE_INDEX";
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX";
-=======
-            importMedia "MusicSong" "music" "$ES_MOVIE_INDEX";
-            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
->>>>>>> 2e3fb9d544d43d2d0c9cd5552b1bba018a95b1a4
             break;;
         [gG]* ) 
             echo "Reindex Game"; 
@@ -46,12 +41,8 @@ while true; do
             break;;
         [a]ll ) 
             echo "Reindex All"; 
-<<<<<<< HEAD
-            deleteAllCurrentIndex
-=======
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
             importMedia "Game" "game" "$ES_GAME_INDEX"
->>>>>>> 2e3fb9d544d43d2d0c9cd5552b1bba018a95b1a4
             importMedia "Book" "book" "$ES_BOOK_INDEX"
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
