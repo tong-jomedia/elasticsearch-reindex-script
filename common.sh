@@ -2,10 +2,31 @@
 
 source "../config.sh"
 
+function getIndexVersion()
+{
+    local currentIndexVersion=$(cat '../tmpData/indexVersion')
+    if [ -z $currentIndexVersion ]; then
+        currentIndexVersion=1
+    fi
+    echo "$currentIndexVersion"
+}
+
+function updateIndexVersion()
+{
+    local currentIndexVersion=$1
+    local newIndexVersion=$((currentIndexVersion+1))
+    if [ "$newIndexVersion" -ge "$MAX_VERSION_NUM_TO_RESET" ]
+    then
+        newIndexVersion=1
+    fi
+    echo $newIndexVersion | cat > '../tmpData/indexVersion'
+}
+
 function deleteAllIndex()
 {
     curl -XDELETE 'http://'$ES_HOST':'$ES_PORT'/_all'
 }
+
 function deleteAllCurrentIndex()
 {
     indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
@@ -17,16 +38,56 @@ function deleteAllCurrentIndex()
     done
 
 }
+
 function deleteCurrentIndex()
 {
     #indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
-	local indexes=($1)
+	local indexes=(${ENV_PREFIX}$1_v$currentIndexVersion)
     for indexName in "${indexes[@]}"
     do
         curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
         curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
         curl -XDELETE $ES_HOST':'$ES_PORT'/'$indexName
     done
+}
+
+function deleteIndexByVersion()
+{
+    local version=($2)
+	local indexes=($1_v$version)
+    indexes="${ENV_PREFIX}index_"${indexes}
+    for indexName in "${indexes[@]}"
+    do
+        curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
+        curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
+        curl -XDELETE $ES_HOST':'$ES_PORT'/'$indexName
+    done
+}
+
+function deleteAllPreviousIndexesByMedia()
+{	
+    local mediaIndex=($1)
+    local nextVersionIndex="${ENV_PREFIX}index_${mediaIndex}_v${nextIndexVersion}"
+    local allPreviousIndexes=$(getAllPreviousIndexesByMedia "$mediaIndex")
+    echo $nextVersionIndex
+    for onePreviousIndex in $allPreviousIndexes 
+    do
+        if [ "$onePreviousIndex" != "$nextVersionIndex" ]
+        then
+            echo $onePreviousIndex
+            curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$onePreviousIndex'_river/'
+            curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
+            curl -XDELETE $ES_HOST':'$ES_PORT'/'$onePreviousIndex
+        fi
+    done
+}
+
+function getAllPreviousIndexesByMedia()
+{
+    local mediaIndex=($1)
+    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/index_'$mediaIndex'*' | grep -Po 'index_'$mediaIndex'_v(\d+)')
+    allIndexes=$(echo $allIndexes | tr "\n\r" "\n\r")
+    echo "$allIndexes"
 }
 
 function getCheckQuery()
@@ -78,12 +139,85 @@ function getMapping()
     echo "$singleMapping"
 }
 
+function compareIndexCountSwitchAlias()
+{
+    local exitChecking=0
+    local indexPrefix=$1
+    local indexCurrent="${ENV_PREFIX}index_${indexPrefix}_v${currentIndexVersion}"
+    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}"
+
+#    echo $indexCurrent
+#    echo $indexNext
+#    echo $currentIndexCount
+#    echo $nextIndexCount
+    local timeOutCounter=0
+    while [ $exitChecking -ne 1 ]
+    do
+        sleep $CHECK_INTERVAL
+        timeOutCounter=$((timeOutCounter + CHECK_INTERVAL))
+        local currentIndexCount=$(getCountOfIndex "$indexCurrent")
+        local nextIndexCount=$(getCountOfIndex "$indexNext")
+        if [ -z $currentIndexCount ]; then
+            currentIndexCount=0
+        fi
+        if [ -z $nextIndexCount ]; then
+            nextIndexCount=0
+        fi
+
+    echo $currentIndexCount
+    echo $nextIndexCount
+        if [ "$nextIndexCount" -ge "$currentIndexCount" ] 
+        then
+            switchAliasByIndex "$indexPrefix"
+            deleteAllPreviousIndexesByMedia "$indexPrefix"
+            exitChecking=1
+        fi
+
+        #check time out
+        if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
+        then
+            if [ "$nextIndexCount" -ne 0 ] 
+            then
+                switchAliasByIndex "$indexPrefix"
+                deleteAllPreviousIndexesByMedia "$indexPrefix"
+            fi
+            exitChecking=1
+        fi
+    done
+}
+
+function getCountOfIndex()
+{
+    local index="$1"
+    local count=$(curl -s -XGET $ES_HOST':'$ES_PORT'/'$index'/media/_count' | grep -Po '"count":(\d*?,|.*?[^\\]",)' | grep -o '[0-9]*')
+    echo "$count"
+}
+
+function switchAliasByIndex()
+{
+    local indexPrefix=$1
+    local alias="${ENV_PREFIX}all_media_${indexPrefix}"
+    local indexPrev="${ENV_PREFIX}index_${indexPrefix}*"
+    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}"
+    curl -XPOST $ES_HOST':'$ES_PORT'/_aliases' -d '{
+        "actions": [
+            {"remove": {
+                "alias": "'$alias'",
+                "index": "'$indexPrev'"
+            }},
+            {"add": {
+                "alias": "'$alias'",
+                "index": "'$indexNext'"
+            }}
+        ]
+    }'
+}
 
 function importMedia()
 {
     local mediaTypeName=$1
     local mediaTableName=$2
-    local indexName=$3
+    local indexName="index_${3}_v${nextIndexVersion}" 
 
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
@@ -112,6 +246,7 @@ function importMedia()
     }'
     echo "${jsonString}" | cat > '../../tmp'
     curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @'../../tmp'
+
 }
 
 function getMappingForBook()

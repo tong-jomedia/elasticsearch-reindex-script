@@ -3,58 +3,86 @@
 source "./common.sh"
 
 reindexMedia=$1
+currentIndexVersion=$(getIndexVersion)
+updateIndexVersion "$currentIndexVersion"
+nextIndexVersion=$(getIndexVersion)
 
 while true; do
     case $reindexMedia in
         [b]ooks* ) 
             echo "Reindex Book"; 
-            deleteCurrentIndex "$ES_BOOK_INDEX";
             importMedia "Book" "book" "$ES_BOOK_INDEX"; 
+            compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
             break;;
         [a]lbums* ) 
             echo "Reindex Music Album"; 
-            deleteCurrentIndex "$ES_MUSIC_ALBUM_INDEX";
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX";
+            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
             break;;
         [m]usic* ) 
             echo "Reindex Music Song"; 
-            deleteCurrentIndex "$ES_MUSIC_SONG_INDEX";
             importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
+            compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
             break;;
         [m]ovies* ) 
             echo "Reindex Movie"; 
+<<<<<<< HEAD
             deleteCurrentIndex "$ES_MOVIE_INDEX";
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX";
+=======
+            importMedia "MusicSong" "music" "$ES_MOVIE_INDEX";
+            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
+>>>>>>> 2e3fb9d544d43d2d0c9cd5552b1bba018a95b1a4
             break;;
         [g]ames* ) 
             echo "Reindex Game"; 
-            deleteCurrentIndex "$ES_GAME_INDEX";
             importMedia "Game" "game" "$ES_GAME_INDEX";
+            compareIndexCountSwitchAlias "$ES_GAME_INDEX"
             break;;
         [s]oftware* ) 
             echo "Reindex Software"; 
-            deleteCurrentIndex "$ES_SOFTWARE_INDEX";
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX";
+            compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
             break;;
         [a]ll ) 
             echo "Reindex All"; 
+<<<<<<< HEAD
             deleteAllCurrentIndex
+=======
+            importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
+            importMedia "Game" "game" "$ES_GAME_INDEX"
+>>>>>>> 2e3fb9d544d43d2d0c9cd5552b1bba018a95b1a4
             importMedia "Book" "book" "$ES_BOOK_INDEX"
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
-            importMedia "Game" "game" "$ES_GAME_INDEX"
-            importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
+            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
+
+            compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
+            compareIndexCountSwitchAlias "$ES_GAME_INDEX"
+            compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
+            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
             break;;
         * ) 
             echo "Reindex All"; 
+<<<<<<< HEAD
             deleteAllCurrentIndex
+=======
+            importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
+            importMedia "Game" "game" "$ES_GAME_INDEX"
+>>>>>>> 2e3fb9d544d43d2d0c9cd5552b1bba018a95b1a4
             importMedia "Book" "book" "$ES_BOOK_INDEX"
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
-            importMedia "Game" "game" "$ES_GAME_INDEX"
-            importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
+            importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
+
+            compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
+            compareIndexCountSwitchAlias "$ES_GAME_INDEX"
+            compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
+            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
             break;;
     esac
 
