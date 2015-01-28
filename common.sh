@@ -244,8 +244,8 @@ function importMedia()
 
         }
     }'
-    echo "${jsonString}" | cat > '../../tmp'
-    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @'../../tmp'
+    echo "${jsonString}" | cat > '../tmpData/'$mediaTypeName
+    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @'../tmpData/'$mediaTypeName
 
 }
 
