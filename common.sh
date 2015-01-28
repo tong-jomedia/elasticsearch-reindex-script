@@ -217,7 +217,7 @@ function importMedia()
 {
     local mediaTypeName=$1
     local mediaTableName=$2
-    local indexName="index_${3}_v${nextIndexVersion}" 
+    local indexName="${ENV_PREFIX}index_${3}_v${nextIndexVersion}" 
 
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
