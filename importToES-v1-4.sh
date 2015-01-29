@@ -6,7 +6,7 @@ echo $currentIndexVersion
 previousIndexVersion=$((currentIndexVersion - 1))
 updateIndexVersion "$currentIndexVersion"
 
-nextIndexVersion=$(getIndexVersion)
+nextIndexVersion=$((currentIndexVersion + 1))
 echo $nextIndexVersion
 #deleteCurrentIndex
 #deleteAllIndex

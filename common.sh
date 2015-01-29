@@ -2,12 +2,29 @@
 
 source "../config.sh"
 
-function getIndexVersion()
+function getIndexVersionByFile()
 {
     local currentIndexVersion=$(cat '../tmpData/indexVersion')
     if [ -z $currentIndexVersion ]; then
         currentIndexVersion=1
     fi
+    echo "$currentIndexVersion"
+}
+function getIndexVersion()
+{
+    local mediaIndex=$ES_SOFTWARE_INDEX 
+    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/'$ENV_PREFIX'index_*' | grep -Po $ENV_PREFIX'index_(\w+)_v(\d+)')
+    allIndexes=$(echo $allIndexes | tr "\n\r" "\n\r")
+    local currentIndexVersion=0
+    for oneIndex in $allIndexes 
+    do
+#        local version=${oneIndex/$ENV_PREFIX'index_(\w+)_v'/''}
+        local version=$(grep -o "[0-9]" <<<"$oneIndex")
+        if [ "$version" -ge "$currentIndexVersion" ]
+        then
+            currentIndexVersion=$version
+        fi
+    done
     echo "$currentIndexVersion"
 }
 
@@ -19,6 +36,7 @@ function updateIndexVersion()
     then
         newIndexVersion=1
     fi
+
     echo $newIndexVersion | cat > '../tmpData/indexVersion'
 }
 

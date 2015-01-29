@@ -4,7 +4,7 @@ source "./common.sh"
 
 currentIndexVersion=$(getIndexVersion)
 updateIndexVersion "$currentIndexVersion"
-nextIndexVersion=$(getIndexVersion)
+nextIndexVersion=$((currentIndexVersion + 1))
 
 while true; do
     read -p "Which to reindexing (b-book | ma-musicAlbum | ms-musicSong | mo-movie | g-game | s-software| all)" reindexMedia

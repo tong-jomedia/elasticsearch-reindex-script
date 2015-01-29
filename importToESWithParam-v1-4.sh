@@ -5,7 +5,7 @@ source "./common.sh"
 reindexMedia=$1
 currentIndexVersion=$(getIndexVersion)
 updateIndexVersion "$currentIndexVersion"
-nextIndexVersion=$(getIndexVersion)
+nextIndexVersion=$((currentIndexVersion + 1))
 
 while true; do
     case $reindexMedia in
