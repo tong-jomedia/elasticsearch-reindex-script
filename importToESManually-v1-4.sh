@@ -26,8 +26,8 @@ while true; do
             break;;
         [mM]o* ) 
             echo "Reindex Movie"; 
-            deleteCurrentIndex "$ES_MOVIE_INDEX";
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX";
+            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
             break;;
         [gG]* ) 
             echo "Reindex Game"; 

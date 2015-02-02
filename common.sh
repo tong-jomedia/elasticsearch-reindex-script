@@ -182,8 +182,8 @@ function compareIndexCountSwitchAlias()
             nextIndexCount=0
         fi
 
-    echo $currentIndexCount
-    echo $nextIndexCount
+        echo $currentIndexCount
+        echo $nextIndexCount
         if [ "$nextIndexCount" -ge "$currentIndexCount" ] 
         then
             switchAliasByIndex "$indexPrefix"
