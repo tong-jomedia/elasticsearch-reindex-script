@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source "./common.sh"
-
+baseDir=`dirname "${BASH_SOURCE[0]}"`
+source "${baseDir}/common.sh"
 currentIndexVersion=$(getIndexVersion)
 updateIndexVersion "$currentIndexVersion"
 nextIndexVersion=$((currentIndexVersion + 1))

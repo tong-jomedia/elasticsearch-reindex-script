@@ -1,8 +1,8 @@
 #!/bin/bash
-source "./common.sh"
+baseDir=`dirname "${BASH_SOURCE[0]}"`
+source "${baseDir}/common.sh"
 currentIndexVersion=$(getIndexVersion)
 echo $currentIndexVersion
-
 previousIndexVersion=$((currentIndexVersion - 1))
 updateIndexVersion "$currentIndexVersion"
 

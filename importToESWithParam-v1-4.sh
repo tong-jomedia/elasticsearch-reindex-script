@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source "./common.sh"
-
+baseDir=`dirname "${BASH_SOURCE[0]}"`
+source "${baseDir}/common.sh"
 reindexMedia=$1
 currentIndexVersion=$(getIndexVersion)
 updateIndexVersion "$currentIndexVersion"
