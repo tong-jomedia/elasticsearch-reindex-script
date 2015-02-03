@@ -1,5 +1,5 @@
 #!/bin/bash
-source "common.sh"
+source "./common.sh"
 currentIndexVersion=$(getIndexVersion)
 echo $currentIndexVersion
 
