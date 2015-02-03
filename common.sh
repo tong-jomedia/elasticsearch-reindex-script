@@ -19,7 +19,7 @@ function getIndexVersion()
     for oneIndex in $allIndexes 
     do
 #        local version=${oneIndex/$ENV_PREFIX'index_(\w+)_v'/''}
-        local version=$(grep -o "[0-9]" <<<"$oneIndex")
+        local version=$(echo $oneIndex | grep -o '[0-9]*')
         if [ "$version" -ge "$currentIndexVersion" ]
         then
             currentIndexVersion=$version
