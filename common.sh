@@ -365,6 +365,7 @@ function getQueryForBook()
             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, m.id AS media_id, \
             l.status AS licensor_status, \
             l.is_public, \
+            l.name AS licensor_name, \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
@@ -461,6 +462,7 @@ function getQueryForMusicAlbum()
             COUNT(DISTINCT music.id) AS song_count, \
             l.status AS licensor_status, \
             l.is_public, \
+            l.name AS licensor_name, \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
@@ -518,6 +520,7 @@ function getQueryForMovie()
             CAST(CONCAT('${MOVIE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, mgr.restrict_type AS 'restrict.type', \
             l.is_public, \
+            l.name AS licensor_name, \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, \
@@ -581,6 +584,7 @@ function getQueryForGame()
             CAST(CONCAT('${GAME_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
+            l.name AS licensor_name, \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
@@ -640,6 +644,7 @@ function getQueryForSoftware()
             CAST(CONCAT('${SOFTWARE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
+            l.name AS licensor_name, \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
