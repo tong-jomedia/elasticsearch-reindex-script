@@ -277,7 +277,19 @@ function getMappingForBook()
                             "artist" : {"type": "string"}
                         }
                     },
-                    "languages" : {"type" : "string"}
+                    "languages" : {"type" : "string"},
+                    "membership_exclusion" : {
+                        "type" : "nested",
+                        "include_in_parent": true,
+                        "properties" : {
+                            "membership_type_id" : {"type": "string"},
+                            "site_id" : {"type": "string"}
+                        }
+                    },
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
                     '
     echo "$mapping"
 }
@@ -301,7 +313,11 @@ function getMappingForMusicAlbum()
                             "artist" : {"type": "string"}
                         }
                     },
-                    "languages" : {"type" : "string"}
+                    "languages" : {"type" : "string"},
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
                     '
     echo "$mapping"
 }
@@ -317,7 +333,11 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
-                    "languages" : {"type" : "string"}
+                    "languages" : {"type" : "string"},
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
                     '
     echo "$mapping"
 }
@@ -335,7 +355,11 @@ function getMappingForGame()
                         "store" : "yes",
                         "index":"not_analyzed"
                      },
-                    "languages" : {"type" : "string"}
+                    "languages" : {"type" : "string"},
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
                     '
 
     echo "$mapping"
@@ -349,7 +373,19 @@ function getMappingForSoftware()
                             "software_type" : {"type": "string"}
                         }
                     },
-                    "languages" : {"type" : "string"}
+                    "languages" : {"type" : "string"},
+                    "membership_exclusion" : {
+                        "type" : "nested",
+                        "include_in_parent": true,
+                        "properties" : {
+                            "membership_type_id" : {"type": "string"},
+                            "site_id" : {"type": "string"}
+                        }
+                    },
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
                     '
     echo "$mapping"
 }
@@ -375,6 +411,8 @@ function getQueryForBook()
             GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -407,6 +445,8 @@ function getQueryForBook()
         LEFT JOIN licensors AS l ON l.media_type = '${BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${BOOK_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
         GROUP BY m.id"
     echo "$query"
 }
@@ -474,6 +514,8 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -507,7 +549,9 @@ function getQueryForMusicAlbum()
         LEFT JOIN music_label AS music_label ON music_label.id = m.label_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MUSIC_MEDIA_TYPE_ID} \
-        GROUP BY m.id"
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
+        GROUP BY m.id, mtscfe.membership_type_id"
     echo "$query"
 }
 
@@ -534,6 +578,8 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             bc.brightcove_id, bc.non_drm_brightcove_id, \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${MOVIE_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -570,6 +616,8 @@ function getQueryForMovie()
         LEFT JOIN brightcove AS bc ON bc.status = 'active'  AND bc.id = m.id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MOVIE_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
         GROUP BY m.id"
 
     echo "$query"
@@ -600,6 +648,8 @@ function getQueryForGame()
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             IF(gy.game_id IS NULL, 0, 1) AS is_yummy, \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${GAME_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -631,6 +681,8 @@ function getQueryForGame()
         LEFT JOIN licensors AS l ON l.media_type = '${GAME_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${GAME_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
         GROUP BY m.id"
     echo "$query"
 }
@@ -657,6 +709,8 @@ function getQueryForSoftware()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${SOFTWARE_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -689,6 +743,8 @@ function getQueryForSoftware()
         LEFT JOIN licensors AS l ON l.media_type = '${SOFTWARE_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${SOFTWARE_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
         GROUP BY m.id"
 
     echo "$query"
