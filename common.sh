@@ -551,7 +551,7 @@ function getQueryForMusicAlbum()
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MUSIC_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
-        GROUP BY m.id, mtscfe.membership_type_id"
+        GROUP BY m.id"
     echo "$query"
 }
 
