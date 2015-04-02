@@ -1,4 +1,50 @@
 #!/bin/bash
+ES_BOOK_INDEX="book"
+ES_MUSIC_ALBUM_INDEX="music_album"
+ES_MUSIC_SONG_INDEX="music_song"
+ES_MOVIE_INDEX="movie"
+ES_GAME_INDEX="game"
+ES_SOFTWARE_INDEX="software"
+ES_AUDIO_BOOK_INDEX="audio_book" 
+
+BOOK_SCORES="book_scores"
+GAME_SCORES="game_scores"
+MOVIE_SCORES="movie_scores"
+MUSIC_SCORES="music_scores"
+SOFTWARE_SCORES="software_scores"
+AUDIO_BOOK_SCORES="audio_book_scores"
+
+DEFAULT_DEVICE_ID=1
+
+BOOK_MEDIA_TYPE_ID=1
+GAME_MEDIA_TYPE_ID=2
+MOVIE_MEDIA_TYPE_ID=3
+MUSIC_MEDIA_TYPE_ID=4
+SOFTWARE_MEDIA_TYPE_ID=5
+AUDIO_BOOK_MEDIA_TYPE_ID=7
+
+BOOK_MEDIA_TYPE_NAME="books"
+GAME_MEDIA_TYPE_NAME="games"
+MOVIE_MEDIA_TYPE_NAME="movies"
+MUSIC_MEDIA_TYPE_NAME="albums"
+MUSIC_MUSIC_MEDIA_TYPE_NAME="music"
+SOFTWARE_MEDIA_TYPE_NAME="software"
+AUDIO_BOOK_MEDIA_TYPE_NAME="audio_books"
+
+PC_DEVICE_TYPE_ID=1
+MOBILE_DEVICE_TYPE_ID=2
+TABLET_DEVICE_TYPE_ID=3
+MAC_DEVICE_TYPE_ID=4
+CONSOLE_DEVICE_TYPE_ID=5
+
+PC_DEVICE_TYPE_NAME="pc"
+MOBILE_DEVICE_TYPE_NAME="mobile"
+TABLET_DEVICE_TYPE_NAME="tablet"
+MAC_DEVICE_TYPE_NAME="mac"
+CONSOLE_DEVICE_TYPE_NAME="console"
+
+MEDIA_GEO_RESTRICT_TABLE_NAME="media_geo_restrict"
+
 baseDir=`dirname "${BASH_SOURCE[0]}"`
 source "${baseDir}/../config.sh"
 
@@ -120,7 +166,8 @@ function getCheckQuery()
 function getMaxIdCheckQuery()
 {
     local tableName=$1
-    local query="SELECT max(id) FROM "$tableName";"
+    local keyColumName=$2
+    local query="SELECT max("$keyColumName") FROM "$tableName";"
     echo "$query"
 }
 
@@ -131,7 +178,13 @@ function getImportBySectionQuery()
     local offset=0
     local batchSize=${LIMIT}
 
-    local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName")
+    if [ "$mediaTableName" = "audio_book" ] 
+    then
+        local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName" "seq_id")
+    else 
+        local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName" "id")
+    fi
+
     local maxId=$(/usr/bin/mysql -h $DB_HOST -u $DB_USER -p"$DB_PASS" -D "$DB_NAME" -e "$getMaxIdCheckQuery" | awk 'NR>1') 
 
     local allQuery=""
@@ -273,10 +326,12 @@ function getMappingForBook()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "author" : {"type": "string"},
-                            "artist" : {"type": "string"}
+                            "author" : {"type": "string", "index": "not_analyzed"},
+                            "artist" : {"type": "string", "index": "not_analyzed"}
                         }
                     },
+                    "content_segments" : {"type": "string", "index": "not_analyzed"},
+                    "genre" : {"type": "string", "index": "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
@@ -299,7 +354,7 @@ function getMappingForMusicSong()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "artist" : {"type": "string"}
+                            "artist" : {"type": "string", "index": "not_analyzed"}
                         }
                     }'
     echo "$mapping"
@@ -310,9 +365,11 @@ function getMappingForMusicAlbum()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "artist" : {"type": "string"}
+                            "artist" : {"type": "string", "index": "not_analyzed"}
                         }
                     },
+                    "content_segments" : {"type": "string", "index": "not_analyzed"},
+                    "genre" : {"type": "string", "index": "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
@@ -327,12 +384,14 @@ function getMappingForMovie()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "actor" : {"type": "string","position_offset_gap": 100 },
-                            "director" : {"type": "string"},
-                            "producer" : {"type": "string"},
-                            "writer" : {"type": "string"}
+                            "actor" : {"type": "string", "index": "not_analyzed"},
+                            "director" : {"type": "string", "index": "not_analyzed"},
+                            "producer" : {"type": "string", "index": "not_analyzed"},
+                            "writer" : {"type": "string", "index": "not_analyzed"}
                         }
                     },
+                    "content_segments" : {"type": "string", "index": "not_analyzed"},
+                    "genre" : {"type": "string", "index": "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
@@ -347,9 +406,11 @@ function getMappingForGame()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "developer" : {"type": "string"}
+                            "developer" : {"type": "string","index": "not_analyzed"}
                         }
                     },
+                    "content_segments" : {"type": "string", "index": "not_analyzed"},
+                    "genre" : {"type": "string", "index": "not_analyzed"},
                     "game_type" : {
                         "type" : "string",
                         "store" : "yes",
@@ -370,9 +431,11 @@ function getMappingForSoftware()
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
-                            "software_type" : {"type": "string"}
+                            "software_type" : {"type": "string","index": "not_analyzed"}
                         }
                     },
+                    "content_segments" : {"type": "string", "index": "not_analyzed"},
+                    "genre" : {"type": "string", "index": "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
@@ -389,7 +452,41 @@ function getMappingForSoftware()
                     '
     echo "$mapping"
 }
-
+function getMappingForAudioBook()
+{
+    local mapping='"people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {"type": "string"},
+                            "narrator" : {"type": "string"}
+                        }
+                    },
+                    "languages" : {"type" : "string"},
+                    "ma_release_date" : {"type" : "date"},
+                    "media_id" : {
+                        "type" : "string", 
+                        "index": "not_analyzed"
+                    },
+                    "id" : {
+                        "type" : "string", 
+                        "index": "not_analyzed"
+                    },
+                    "membership_exclusion" : {
+                        "type" : "nested",
+                        "include_in_parent": true,
+                        "properties" : {
+                            "membership_type_id" : {"type": "string"},
+                            "site_id" : {"type": "string"}
+                        }
+                    },
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+    echo "$mapping"
+}
 
 function getQueryForBook()
 {
@@ -551,7 +648,7 @@ function getQueryForMusicAlbum()
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MUSIC_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
-        GROUP BY m.id, mtscfe.membership_type_id"
+        GROUP BY m.id"
     echo "$query"
 }
 
@@ -746,6 +843,79 @@ function getQueryForSoftware()
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
         GROUP BY m.id"
+
+    echo "$query"
+}
+
+function getQueryForAudioBook()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT 0 AS episode_id, \
+            CAST(CONCAT('${AUDIO_BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
+            l.status AS licensor_status, \
+            l.is_public, \
+            l.name AS licensor_name, \
+            GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
+            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
+            GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT awa.\`name\`) AS 'awards[]', \
+            GROUP_CONCAT(DISTINCT seab.\`title\`) AS 'series_title[]', \
+            mgr.restrict_type AS 'restrict.type', \
+            GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
+            CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
+            '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AS media_type, \
+            CAST(m.id AS CHAR) AS media_id, \
+            m.*, \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
+            GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
+            cab.duration AS 'chapter[duration]', \
+            cab.part_number AS 'chapter[part_number]', \
+            cab.chapter_number AS 'chapter[charter_number]', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
+             AND mss.id = m.id) \
+             AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${MOBILE_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${MOBILE_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${TABLET_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${TABLET_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${MAC_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${MAC_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${CONSOLE_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
+        FROM (SELECT * FROM audio_book WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
+        LEFT JOIN ${MEDIA_GEO_RESTRICT_TABLE_NAME} AS mgr \
+            ON m.id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
+        LEFT JOIN content_filters_medias AS cfm ON m.id = cfm.media_id \
+            AND cfm.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
+        LEFT JOIN content_filters cf ON cf.id = cfm.filter_id \
+        LEFT JOIN audio_book_authors AS aba ON aba.audio_book_id = m.id \
+        LEFT JOIN author AS au ON au.id = aba.author_id \
+        LEFT JOIN audio_book_narrators AS abn ON abn.audio_book_id = m.id
+        LEFT JOIN narrators AS nar ON nar.id = abn.narrator_id
+        LEFT JOIN audio_book_genres AS abg ON abg.audio_book_id = m.id \
+        LEFT JOIN genre_book AS gb ON gb.id = abg.genre_id \
+        LEFT JOIN audio_book_awards AS abaw ON abaw.audio_book_id = m.id \
+        LEFT JOIN awards AS awa ON awa.id = abaw.award_id \
+        LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
+        LEFT JOIN series_audio_book AS seab ON seab.id = abse.serie_id \
+        LEFT JOIN chapter_audio_book AS cab ON cab.audio_book_id = m.id \
+        LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
+        LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
+        LEFT JOIN licensors AS l ON l.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
+        LEFT JOIN site_content_filter_exclusions AS scfe \
+            ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
+        GROUP BY m.id, cab.chapter_number"
 
     echo "$query"
 }

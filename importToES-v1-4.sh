@@ -11,6 +11,9 @@ echo $nextIndexVersion
 #deleteCurrentIndex
 #deleteAllIndex
 
+#importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX"
+#compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX"
+
 importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
 importMedia "Game" "game" "$ES_GAME_INDEX"
 importMedia "Book" "book" "$ES_BOOK_INDEX"
