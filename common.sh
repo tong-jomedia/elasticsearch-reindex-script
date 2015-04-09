@@ -3,7 +3,7 @@ source "${baseDir}/init.sh"
 
 function getIndexVersionByFile()
 {
-    local currentIndexVersion=$(cat $baseDir'/../tmpData/indexVersion')
+    local currentIndexVersion=$(cat $tmpDataDir'/indexVersion')
     if [ -z $currentIndexVersion ]; then
         currentIndexVersion=1
     fi
@@ -36,7 +36,7 @@ function updateIndexVersion()
         newIndexVersion=1
     fi
 
-    echo $newIndexVersion | cat > "${baseDir}/../tmpData/indexVersion"
+    echo $newIndexVersion | cat > "${tmpDataDir}/indexVersion"
 }
 
 function deleteAllIndex()
@@ -261,8 +261,8 @@ function importMedia()
 
         }
     }'
-    echo "${jsonString}" | cat > $baseDir'/../tmpData/'$mediaTypeName
-    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
+    echo "${jsonString}" | cat > $tmpDataDir'/'$mediaTypeName
+    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @$tmpDataDir'/'$mediaTypeName
 
 }
 

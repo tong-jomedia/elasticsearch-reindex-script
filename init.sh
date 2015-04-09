@@ -1,6 +1,9 @@
 #!/bin/bash
 baseDir=`dirname "${BASH_SOURCE[0]}"`
-source "${baseDir}/../shared/config/config.sh"
+sharedDir="${baseDir}/../../shared"
+source "${sharedDir}/config/config.sh"
+tmpDataDir="${sharedDir}/tmpData"
+
 ES_BOOK_INDEX="book"
 ES_MUSIC_ALBUM_INDEX="music_album"
 ES_MUSIC_SONG_INDEX="music_song"
