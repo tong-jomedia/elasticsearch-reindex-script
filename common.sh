@@ -1,6 +1,5 @@
 #!/bin/bash
-baseDir=`dirname "${BASH_SOURCE[0]}"`
-source "${baseDir}/../config.sh"
+source "${baseDir}/init.sh"
 
 function getIndexVersionByFile()
 {
