@@ -1,2 +1,2 @@
-# elasticsearch-reindex-script
+elasticsearch-reindex-script
 Elasticsearch reindex script
