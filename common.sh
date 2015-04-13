@@ -480,7 +480,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
-            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id AND region = 'CA') AS 'restrict.song.contry_code[]' \
+            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id) AS 'restrict.song.contry_code[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
             LEFT JOIN ${MUSIC_SCORES} AS mss \
