@@ -515,6 +515,7 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'songs.title[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
