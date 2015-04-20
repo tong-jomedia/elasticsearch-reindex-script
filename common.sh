@@ -203,11 +203,11 @@ function checkReindexFinshed
             echo "Re-indexing in process... time spend: ${timeOutCounter} seconds"
 
             #check time out
-            if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
-            then
-                exitChecking=1
-                #todo need send warning message or maybe need to exit from the script
-            fi
+#            if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
+#            then
+#                exitChecking=1
+#                #todo need send warning message or maybe need to exit from the script
+#            fi
         fi
     done
 }
@@ -220,8 +220,8 @@ function saveToS3Snapshot
         "settings": {
             "bucket": "pl2-s3-us-east-1-sync-staging",
             "region": "us-east-1",
-            "access_key": "AKIAIOCVIM5WWNKP7OGA",
-            "secret_key": "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",
+            "access_key": "'$AWS_ACCESS_KEY'",
+            "secret_key": "'$AWS_SECRET_KEY'",
             "base_path": "s1"
         }
     }'
@@ -235,7 +235,7 @@ function saveToS3Snapshot
 function checkSnapshotBackupFinshed
 {
     local snapshotFile=$SNAPSHOT_PREFIX'_v'$nextIndexVersion
-    local indexPrefix=$1
+    local indexPrefix=$2
     local exitChecking=0
     local timeOutCounter=0
     while [ $exitChecking -ne 1 ]
@@ -264,7 +264,7 @@ function checkSnapshotBackupFinshed
 function touchDoneFileToS3
 {
     export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY"
-    export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEa"
+    export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEY"
     mkdir -p "$LOCAL_DONE_FOLDER"
     for oneRegin in ${ALL_S4_REGIONS[@]}
     do    
@@ -318,8 +318,8 @@ function importMedia()
             "index": "'$indexName'",
             "type": "media",
             "autocommit": true,
-            "maxbulkactions" : 10000,
-            "maxconcurrrentbulkactions": 10,
+            "max_bulk_actions" : 10000,
+            "max_concurrrent_bulk_actions": 10,
             "fetchsize" : 100,
             "sql" : ['"$query"'],
             "type_mapping" : {
@@ -531,7 +531,7 @@ function getQueryForMusicSong()
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
             CAST(CONCAT_WS('-', '${MUSIC_MEDIA_TYPE_ID}', ma.id, m.id) AS CHAR) AS _id, \
-            (SELECT mgr.restrict_type \
+            (SELECT GROUP_CONCAT(mgr.restrict_type) \
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP BY m.album_id) AS 'restrict.date[]', \
@@ -551,7 +551,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
-            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id) AS 'restrict.song.contry_code[]' \
+            (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.contry_code[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
             LEFT JOIN ${MUSIC_SCORES} AS mss \
