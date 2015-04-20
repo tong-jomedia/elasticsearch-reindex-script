@@ -49,3 +49,5 @@ MAC_DEVICE_TYPE_NAME="mac"
 CONSOLE_DEVICE_TYPE_NAME="console"
 
 MEDIA_GEO_RESTRICT_TABLE_NAME="media_geo_restrict"
+BACKUP_REPO="capi_backup"
+SNAPSHOT_PREFIX="snapshot_capi_index"

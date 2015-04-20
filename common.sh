@@ -1,14 +1,6 @@
 #!/bin/bash
 source "${baseDir}/init.sh"
 
-function getIndexVersionByFile()
-{
-    local currentIndexVersion=$(cat $tmpDataDir'/indexVersion')
-    if [ -z $currentIndexVersion ]; then
-        currentIndexVersion=1
-    fi
-    echo "$currentIndexVersion"
-}
 function getIndexVersion()
 {
     local mediaIndex=$ES_SOFTWARE_INDEX 
@@ -42,18 +34,6 @@ function updateIndexVersion()
 function deleteAllIndex()
 {
     curl -XDELETE 'http://'$ES_HOST':'$ES_PORT'/_all'
-}
-
-function deleteAllCurrentIndex()
-{
-    indexes=($ES_BOOK_INDEX $ES_MUSIC_ALBUM_INDEX $ES_MOVIE_INDEX $ES_GAME_INDEX $ES_MUSIC_SONG_INDEX $ES_SOFTWARE_INDEX)
-    for indexName in "${indexes[@]}"
-    do
-        curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/'
-        curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
-        curl -XDELETE $ES_HOST':'$ES_PORT'/'$indexName
-    done
-
 }
 
 function deleteCurrentIndex()
@@ -162,12 +142,13 @@ function compareIndexCountSwitchAlias()
     local indexPrefix=$1
     local indexCurrent="${ENV_PREFIX}index_${indexPrefix}_v${currentIndexVersion}"
     local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}"
+    local timeOutCounter=0
 
 #    echo $indexCurrent
 #    echo $indexNext
 #    echo $currentIndexCount
 #    echo $nextIndexCount
-    local timeOutCounter=0
+
     while [ $exitChecking -ne 1 ]
     do
         sleep $CHECK_INTERVAL
@@ -185,7 +166,7 @@ function compareIndexCountSwitchAlias()
         echo $nextIndexCount
         if [ "$nextIndexCount" -ge "$currentIndexCount" ] 
         then
-            switchAliasByIndex "$indexPrefix"
+        #    switchAliasByIndex "$indexPrefix"
             deleteAllPreviousIndexesByMedia "$indexPrefix"
             exitChecking=1
         fi
@@ -195,12 +176,102 @@ function compareIndexCountSwitchAlias()
         then
             if [ "$nextIndexCount" -ne 0 ] 
             then
-                switchAliasByIndex "$indexPrefix"
+        #        switchAliasByIndex "$indexPrefix"
                 deleteAllPreviousIndexesByMedia "$indexPrefix"
             fi
             exitChecking=1
         fi
     done
+}
+
+function checkReindexFinshed
+{
+    local indexPrefix=$1
+    local exitChecking=0
+    local timeOutCounter=0
+    local indexName="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}_river"
+    while [ $exitChecking -ne 1 ]
+    do
+        sleep $CHECK_INTERVAL
+        timeOutCounter=$((timeOutCounter + CHECK_INTERVAL))
+        finishedTime=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_river/jdbc/'$indexName'/_state' | grep -Po '(?<="last_active_end":")[^"]*') 
+        if [ ! -z "$finishedTime" ] 
+        then
+            exitChecking=1
+            echo "Re-indexing finished, finshing time is: ${finishedTime}"
+        else
+            echo "Re-indexing in process... time spend: ${timeOutCounter} seconds"
+
+            #check time out
+            if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
+            then
+                exitChecking=1
+                #todo need send warning message or maybe need to exit from the script
+            fi
+        fi
+    done
+}
+
+function saveToS3Snapshot
+{
+    local saveIndexes=$1
+    curl -XPUT $ES_HOST':'$ES_PORT'/_snapshot/'$BACKUP_REPO -d '{
+        "type": "s3",
+        "settings": {
+            "bucket": "pl2-s3-us-east-1-sync-staging",
+            "region": "us-east-1",
+            "access_key": "AKIAIOCVIM5WWNKP7OGA",
+            "secret_key": "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",
+            "base_path": "s1"
+        }
+    }'
+    local snapshotFile=$SNAPSHOT_PREFIX'_v'$nextIndexVersion
+    curl -XDELETE $ES_HOST':'$ES_PORT'/_snapshot/'$BACKUP_REPO'/'$snapshotFile'?wait_for_completion=true'
+    curl -XPUT $ES_HOST':'$ES_PORT'/_snapshot/'$BACKUP_REPO'/'$snapshotFile'?wait_for_completion=true' -d '{
+        "indices": "'$saveIndexes'"
+    }'
+}
+
+function checkSnapshotBackupFinshed
+{
+    local snapshotFile=$SNAPSHOT_PREFIX'_v'$nextIndexVersion
+    local indexPrefix=$1
+    local exitChecking=0
+    local timeOutCounter=0
+    while [ $exitChecking -ne 1 ]
+    do
+        sleep $CHECK_INTERVAL
+        timeOutCounter=$((timeOutCounter + CHECK_INTERVAL))
+        finishedTime=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_snapshot/'$BACKUP_REPO'/'$snapshotFile'/_status' | grep -Po '(?<="state":")[^"]*')
+        if [ "$finishedTime" == "SUCCESS" ] 
+        then
+            exitChecking=1
+            echo "Snapshot finished backup"
+        else
+            echo "Snapshot backup processing... time spend: ${timeOutCounter} seconds"
+
+            #check time out
+#            if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
+#            then
+#                exitChecking=1
+#                #todo need send warning message or maybe need to exit from the script
+#            fi
+        fi
+
+    done
+}
+
+function touchDoneFileToS3
+{
+    export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY"
+    export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEa"
+    mkdir -p "$LOCAL_DONE_FOLDER"
+    for oneRegin in ${ALL_S4_REGIONS[@]}
+    do    
+        touch "${LOCAL_DONE_FOLDER}/${oneRegin}"
+    done
+
+    aws s3 sync ${baseDir}/${LOCAL_DONE_FOLDER}/ s3://pl2-s3-us-east-1-sync-staging/s1/${S3_DONE_FOLDER} --region=us-east-1
 }
 
 function getCountOfIndex()
@@ -455,7 +526,7 @@ function getQueryForMusicSong()
     local offset=$1
     local batchSize=$2
     local query="\
-        SELECT 0 AS episode_id, ma.id AS id, ma.id as media_id, m.*, \
+        SELECT 0 AS episode_id, ma.id AS id, ma.id as media_id, m.*, m.id AS song_id, \
             dsp.\`name\` AS data_source_provider_name, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
@@ -515,6 +586,7 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
