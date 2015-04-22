@@ -15,20 +15,20 @@ importMedia "Game" "game" "$ES_GAME_INDEX"
 importMedia "Book" "book" "$ES_BOOK_INDEX"
 importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
 importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
+#importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
 
 checkReindexFinshed "$ES_GAME_INDEX"
 checkReindexFinshed "$ES_BOOK_INDEX"
 checkReindexFinshed "$ES_MOVIE_INDEX"
 checkReindexFinshed "$ES_MUSIC_ALBUM_INDEX"
-checkReindexFinshed "$ES_MUSIC_SONG_INDEX"
+#checkReindexFinshed "$ES_MUSIC_SONG_INDEX"
 
 compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
 compareIndexCountSwitchAlias "$ES_GAME_INDEX"
 compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
 compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
 compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
-compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
+#compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
 
 
 allSaveIndexes="${ENV_PREFIX}index_${ES_BOOK_INDEX}_v${nextIndexVersion},\
