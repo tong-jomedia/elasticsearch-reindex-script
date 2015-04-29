@@ -265,10 +265,10 @@ function touchDoneFileToS3
 {
     export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY"
     export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEY"
-    mkdir -p "$LOCAL_DONE_FOLDER"
-    for oneRegin in ${ALL_S4_REGIONS[@]}
+    mkdir -p "${baseDir}/$LOCAL_DONE_FOLDER"
+    for oneRegin in ${ALL_S3_REGIONS[@]}
     do    
-        touch "${LOCAL_DONE_FOLDER}/${oneRegin}"
+        touch "${baseDir}/${LOCAL_DONE_FOLDER}/${oneRegin}"
     done
 
     aws s3 sync ${baseDir}/${LOCAL_DONE_FOLDER}/ s3://pl2-s3-us-east-1-sync-staging/s1/${S3_DONE_FOLDER} --region=us-east-1
