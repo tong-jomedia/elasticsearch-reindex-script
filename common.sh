@@ -468,7 +468,7 @@ function getQueryForMusicSong()
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP BY m.album_id) AS 'restrict.country_code[]', \
-            (SELECT GROUP_CONCAT(mgr.date_start) \
+             (SELECT CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) \
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP By m.album_id) AS 'restrict.date[]', \
@@ -480,7 +480,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
-            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id AND region = 'CA') AS 'restrict.song.country_code[]' \
+            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
             LEFT JOIN ${MUSIC_SCORES} AS mss \
