@@ -17,7 +17,6 @@ importMedia "Book" "book" "$ES_BOOK_INDEX"
 importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
 importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
 importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
-importMedia "Music" "music" "$ES_MUSIC_SONG_INDEX"
 importMedia "MusicAlbumArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_album_artist"
 importMedia "MusicSongArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_song_artist"
 

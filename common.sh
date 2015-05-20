@@ -508,7 +508,7 @@ function getQueryForMusicSong()
     local offset=$1
     local batchSize=$2
     local query="\
-        SELECT 0 AS episode_id, ma.id AS id, ma.id as media_id, m.*, \
+        SELECT 0 AS episode_id, ma.id AS id, m.id AS song_id, ma.id as media_id, m.*, \
             dsp.\`name\` AS data_source_provider_name, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
