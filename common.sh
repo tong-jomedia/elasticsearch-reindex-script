@@ -1,4 +1,4 @@
-#!/bin/bash
+
 source "${baseDir}/init.sh"
 
 function getIndexVersionByFile()
@@ -92,7 +92,7 @@ function deleteAllPreviousIndexesByMedia()
         if [ "$onePreviousIndex" != "$nextVersionIndex" ]
         then
             echo $onePreviousIndex
-            curl -XDELETE $ES_HOST':'$ES_PORT'/_river/'$onePreviousIndex'_river/'
+            curl -XDELETE $ES_HOST':'$ES_PORT'/_river/river_'$onePreviousIndex'*/'
             curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
             curl -XDELETE $ES_HOST':'$ES_PORT'/'$onePreviousIndex
         fi
@@ -236,6 +236,12 @@ function importMedia()
     local mediaTableName=$2
     local indexName="${ENV_PREFIX}index_${3}_v${nextIndexVersion}" 
 
+    if [ -z "$4" ]; then
+        local indexType="media"
+    else
+        local indexType=$4
+    fi
+    
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
     local jsonString='{
@@ -245,14 +251,14 @@ function importMedia()
             "user" : "'$DB_USER'",
             "password" : "'$DB_PASS'",
             "index": "'$indexName'",
-            "type": "media",
+            "type": "'$indexType'",
             "autocommit": true,
             "maxbulkactions" : 10000,
             "maxconcurrrentbulkactions": 10,
             "fetchsize" : 100,
             "sql" : ['"$query"'],
             "type_mapping" : {
-                "media" : {
+                "'$indexType'" : {
                     "properties" : {
                         '"$mapping"' 
                     }
@@ -261,8 +267,9 @@ function importMedia()
 
         }
     }'
+    local riverIndex="${indexName}_${indexType}"
     echo "${jsonString}" | cat > $baseDir'/../tmpData/'$mediaTypeName
-    curl -XPUT $ES_HOST':'$ES_PORT'/_river/'$indexName'_river/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
+    curl -XPUT $ES_HOST':'$ES_PORT'/_river/river_'$riverIndex'/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
 
 }
 
@@ -390,6 +397,52 @@ function getMappingForSoftware()
 }
 
 
+function getMappingForMusicAlbumArtist()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+
+
+function getMappingForMusicSongArtist()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+function getQueryForMusicAlbumArtist()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MUSIC_ALBUM_ARTIST', '-', a.id) AS CHAR) AS _id, \
+             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM music_artist WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN music_album_artists AS maa ON a.id = maa.artist_id";
+    echo "$query"
+}
+
+function getQueryForMusicSongArtist()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
+             '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM music_artist WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN music_song_artists AS msa ON a.id = msa.artist_id";
+    echo "$query"
+}
+
 function getQueryForBook()
 {
     local offset=$1
@@ -480,7 +533,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
-            (SELECT DISTINCT region FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]' \
+             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
             LEFT JOIN ${MUSIC_SCORES} AS mss \

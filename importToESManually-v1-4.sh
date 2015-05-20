@@ -39,6 +39,13 @@ while true; do
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX";
             compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
             break;;
+        [pP]* ) 
+            echo "Reindex People"; 
+            importMedia "MusicAlbumArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_album_artist"
+#            curl -XDELETE "192.168.0.102:9200/_river/index_people_v171_river"
+            importMedia "MusicSongArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_song_artist"
+            compareIndexCountSwitchAlias "$ES_PEOPLE_INDEX"
+            break;;
         [a]ll ) 
             echo "Reindex All"; 
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
