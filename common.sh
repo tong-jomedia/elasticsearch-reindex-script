@@ -534,7 +534,7 @@ function getQueryForMusicSong()
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]' \
-            (SELECT CAST(CONCAT_WS(',', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id, mf.format, mf.bitrate) AS CHAR) \
+            (SELECT CAST(CONCAT_WS('-', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id, mf.format, mf.bitrate) AS CHAR) \
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
