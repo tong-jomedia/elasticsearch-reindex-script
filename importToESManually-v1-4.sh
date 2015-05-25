@@ -42,8 +42,14 @@ while true; do
         [pP]* ) 
             echo "Reindex People"; 
             importMedia "MusicAlbumArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_album_artist"
-#            curl -XDELETE "192.168.0.102:9200/_river/index_people_v171_river"
             importMedia "MusicSongArtist" "music_artist" "$ES_PEOPLE_INDEX" "music_song_artist"
+            importMedia "BookAuthor" "author" "$ES_PEOPLE_INDEX" "book_author"
+            importMedia "BookArtist" "artists" "$ES_PEOPLE_INDEX" "book_artist"
+            importMedia "MovieActor" "actors" "$ES_PEOPLE_INDEX" "movie_actor"
+            importMedia "MovieWriter" "writers" "$ES_PEOPLE_INDEX" "movie_writer"
+            importMedia "MovieProducer" "producers" "$ES_PEOPLE_INDEX" "movie_producer"
+            importMedia "MovieDirector" "directors" "$ES_PEOPLE_INDEX" "movie_director"
+            importMedia "GameDeveloper" "developer" "$ES_PEOPLE_INDEX" "game_developer"
             compareIndexCountSwitchAlias "$ES_PEOPLE_INDEX"
             break;;
         [a]ll ) 

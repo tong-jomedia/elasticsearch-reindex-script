@@ -396,6 +396,27 @@ function getMappingForSoftware()
     echo "$mapping"
 }
 
+function getMappingForBookAuthor()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+
+function getMappingForBookArtist()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
 
 function getMappingForMusicAlbumArtist()
 {
@@ -419,6 +440,145 @@ function getMappingForMusicSongArtist()
 
     echo "$mapping"
 }
+
+function getMappingForMovieActor()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+
+function getMappingForMovieDirector()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+function getMappingForMovieWriter()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+function getMappingForMovieProducer()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+
+function getMappingForGameDeveloper()
+{
+    local mapping='"people_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+
+    echo "$mapping"
+}
+function getQueryForGameDeveloper()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('GAME-DEVELOPER', '-', a.id) AS CHAR) AS _id, \
+             '${GAME_MEDIA_TYPE_NAME}' AS media_type, 'developer' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM developer WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN game AS maa ON a.id = maa.developer_id";
+    echo "$query"
+}
+
+function getQueryForMovieActor()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MOVIE-ACTOR', '-', a.id) AS CHAR) AS _id, \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'actor' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM actors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN movie_actors AS maa ON a.id = maa.actor_id";
+    echo "$query"
+}
+
+function getQueryForMovieDirector()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MOVIE-DIRECTOR', '-', a.id) AS CHAR) AS _id, \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'director' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM directors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN movie_directors AS maa ON a.id = maa.director_id";
+    echo "$query"
+}
+
+function getQueryForMovieWriter()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MOVIE-WRITER', '-', a.id) AS CHAR) AS _id, \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'writer' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM writers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN movie_writers AS maa ON a.id = maa.writer_id";
+    echo "$query"
+}
+
+function getQueryForMovieProducer()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('MOVIE-PRODUCER', '-', a.id) AS CHAR) AS _id, \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'producer' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM producers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN movie_producers AS maa ON a.id = maa.producer_id";
+    echo "$query"
+}
+
+
+
+function getQueryForBookAuthor()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('BOOK_AUTHOR', '-', a.id) AS CHAR) AS _id, \
+             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'author' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM author WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN book_authors AS maa ON a.id = maa.author_id";
+    echo "$query"
+}
+
+function getQueryForBookArtist()
+{
+    local offset=$1
+    local batchSize=$2
+    local query="\
+        SELECT CAST(CONCAT('BOOK_ARTSIT', '-', a.id) AS CHAR) AS _id, \
+             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+        FROM (SELECT * FROM artists WHERE id >= ${offset} AND id < ${batchSize}) AS a \
+        JOIN book_artists AS maa ON a.id = maa.artist_id";
+    echo "$query"
+}
+
 function getQueryForMusicAlbumArtist()
 {
     local offset=$1
