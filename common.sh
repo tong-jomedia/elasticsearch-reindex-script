@@ -119,7 +119,8 @@ function getCheckQuery()
 function getMaxIdCheckQuery()
 {
     local tableName=$1
-    local query="SELECT max(id) FROM "$tableName";"
+    local keyName=$2
+    local query="SELECT max("$keyName") FROM "$tableName";"
     echo "$query"
 }
 
@@ -127,10 +128,11 @@ function getImportBySectionQuery()
 {
     local mediaType=$1
     local mediaTableName=$2
+    local keyName=$3
     local offset=0
     local batchSize=${LIMIT}
 
-    local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName")
+    local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName" "$keyName")
     local maxId=$(/usr/bin/mysql -h $DB_HOST -u $DB_USER -p"$DB_PASS" -D "$DB_NAME" -e "$getMaxIdCheckQuery" | awk 'NR>1') 
 
     local allQuery=""
@@ -252,14 +254,14 @@ function importMedia()
     local mediaTypeName=$1
     local mediaTableName=$2
     local indexName="${ENV_PREFIX}index_${3}_v${nextIndexVersion}" 
-
-    if [ -z "$4" ]; then
+    local keyName=$4
+    if [ -z "$5" ]; then
         local indexType="media"
     else
-        local indexType=$4
+        local indexType=$5
     fi
     
-    local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
+    local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName" "$keyName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
     # sendMapping "$mapping" "$indexName" "$indexType"
     local jsonString='{
@@ -290,6 +292,79 @@ function importMedia()
     curl -XPUT $ES_HOST':'$ES_PORT'/_river/river_'$riverIndex'/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
 
 }
+function getMappingForMusicSong()
+{
+    local mapping='"people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {"type": "string"}
+                        }
+                    },
+                    "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "media_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "album_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "label_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "data_origin_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+    echo "$mapping"
+}
+function getMappingForMusicAlbum()
+{
+    local mapping='"people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {"type": "string"}
+                        }
+                    },
+                    "languages" : {"type" : "string"},
+                    "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "song_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "media_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "album_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "label_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "data_origin_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+    echo "$mapping"
+}
 
 function getMappingForBook()
 {
@@ -310,41 +385,27 @@ function getMappingForBook()
                             "site_id" : {"type": "string"}
                         }
                     },
-                    "membership_type_site_exclusion_id" : {
+                    "id" : {
                         "type": "string",
                         "index": "not_analyzed"
-                    }
-                    '
-    echo "$mapping"
-}
-function getMappingForMusicSong()
-{
-    local mapping='"people" : {
-                        "type" : "nested",
-                        "include_in_parent" : true,
-                        "properties" : {
-                            "artist" : {"type": "string"}
-                        }
-                    }'
-    echo "$mapping"
-}
-function getMappingForMusicAlbum()
-{
-    local mapping='"people" : {
-                        "type" : "nested",
-                        "include_in_parent" : true,
-                        "properties" : {
-                            "artist" : {"type": "string"}
-                        }
                     },
-                    "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "media_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "isbn" : {
                         "type": "string",
                         "index": "not_analyzed"
                     }
                     '
     echo "$mapping"
 }
+
+
 function getMappingForMovie()
 {
     local mapping='"people" : {
@@ -618,8 +679,8 @@ function getQueryForMusicAlbumArtist()
     local query="\
         SELECT CAST(CONCAT('MUSIC_ALBUM_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
-        FROM (SELECT * FROM music_artist WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN music_album_artists AS maa ON a.id = maa.artist_id";
+        FROM (SELECT * FROM music_album_artists WHERE id >= ${offset} AND id < ${batchSize}) AS maa \
+        JOIN music_artist AS a ON a.id = maa.artist_id";
     echo "$query"
 }
 
@@ -630,8 +691,8 @@ function getQueryForMusicSongArtist()
     local query="\
         SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
-        FROM (SELECT * FROM music_artist WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN music_song_artists AS msa ON a.id = msa.artist_id";
+        FROM (SELECT * FROM music_song_artists WHERE id >= ${offset} AND id < ${batchSize}) AS maa \
+        JOIN music_artist AS a ON a.id = msa.artist_id";
     echo "$query"
 }
 
@@ -640,8 +701,56 @@ function getQueryForBook()
     local offset=$1
     local batchSize=$2
     local query="\
-        SELECT  0 AS episode_id, m.*, \
+        SELECT  0 AS episode_id, \
             CAST(CONCAT('${BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
+            CAST(m.id AS CHAR) AS id, \
+            CAST(m.id AS CHAR) AS media_id, \
+            CAST(m.isbn AS CHAR) AS isbn, \
+            m.title, \
+            m.author, \
+            m.description, \
+            m.number_of_pages, \
+            m.release_year, \
+            m.ma_release_date, \
+            m.emedia_release_date, \
+            m.language, \
+            m.date_added, \
+            m.premium, \
+            m.download_url, \
+            m.is_downloadable, \
+            m.jpg_download_url, \
+            m.licensor_id, \
+            m.author_id, \
+            m.volume_number, \
+            m.issue_number, \
+            m.version_number, \
+            m.top_book, \
+            m.last_viewed, \
+            m.total_num_views, \
+            m.average_rating, \
+            m.total_ratings, \
+            m.today, \
+            m.today_views, \
+            m.tour_views, \
+            m.featured, \
+            m.featured_ma, \
+            m.ma_queue, \
+            m.popular, \
+            m.new_release, \
+            m.status, \
+            m.hide, \
+            m.keyword, \
+            m.usd_price, \
+            m.source, \
+            m.has_pages_v2, \
+            m.jo_score, \
+            m.popularity, \
+            m.secret, \
+            m.file_format_type_id, \
+            m.qastatus, \
+            m.batch_id, \
+            m.num_of_images, \
+            m.date_published, \
             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, m.id AS media_id, \
             l.status AS licensor_status, \
             l.is_public, \
@@ -700,7 +809,56 @@ function getQueryForMusicSong()
     local offset=$1
     local batchSize=$2
     local query="\
-        SELECT 0 AS episode_id, ma.id AS id, m.id AS song_id, ma.id as media_id, m.*, \
+        SELECT 0 AS episode_id, \
+            CAST(ma.id AS CHAR) AS id, \
+            CAST(ma.id AS CHAR) as media_id, \
+            CAST(m.label_id AS CHAR) AS label_id, \
+            CAST(m.album_id AS CHAR) AS album_id, \
+            CAST(m.data_origin_id AS CHAR) AS data_origin_id, \
+            CAST(m.id AS CHAR) AS song_id, \
+            m.title, \
+            m.artist_name, \
+            m.description, \
+            m.release_date, \
+            m.date_added, \
+            m.premium, \
+            m.download_url, \
+            m.last_viewed, \
+            m.total_num_views, \
+            m.average_rating, \
+            m.total_ratings, \
+            m.today, \
+            m.today_views, \
+            m.tour_views, \
+            m.featured, \
+            m.featured_ma, \
+            m.top_music, \
+            m.popular, \
+            m.new_release, \
+            m.status, \
+            m.publisher, \
+            m.hide, \
+            m.keyword, \
+            m.cd_title, \
+            m.cd_description, \
+            m.vocals, \
+            m.in_style_of, \
+            m.category, \
+            m.sub_category, \
+            m.featured_instruments, \
+            m.upc, \
+            m.track_length, \
+            m.track, \
+            m.languages, \
+            m.song_type, \
+            m.disc, \
+            m.sku, \
+            m.data_origin_status, \
+            m.data_source_provider_id, \
+            m.isrc, \
+            m.parental_advisory, \
+            m.qastatus, \
+            m.batch_id, \
             dsp.\`name\` AS data_source_provider_name, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
@@ -745,8 +903,49 @@ function getQueryForMusicAlbum()
     local query="\
         SELECT 0 AS episode_id, \
             CAST(CONCAT('${MUSIC_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
-            music_label.\`name\` AS 'labelName[]', \
-            COUNT(DISTINCT music.id) AS song_count, \
+            CAST(m.id AS CHAR) as id, \
+            CAST(m.id AS CHAR) as media_id, \
+            CAST(m.label_id AS CHAR) AS label_id, \
+            CAST(m.data_origin_id AS CHAR) AS data_origin_id, \
+            m.title, \
+            m.search_title, \
+            m.description, \
+            m.release_date, \
+            m.ma_release_date, \
+            m.date_added, \
+            m.premium, \
+            m.last_viewed, \
+            m.total_num_views, \
+            m.average_rating, \
+            m.total_ratings, \
+            m.today, \
+            m.today_views, \
+            m.tour_views, \
+            m.featured, \
+            m.featured_ma, \
+            m.ma_queue, \
+            m.top_album, \
+            m.popular, \
+            m.new_release, \
+            m.status, \
+            m.supplier_id, \
+            m.hide, \
+            m.keyword, \
+            m.genre_id, \
+            m.licensor_id, \
+            m.format, \
+            m.featured_instruments, \
+            m.total_listens, \
+            m.jo_score, \
+            m.popularity, \
+            m.data_origin_status, \
+            m.data_source_provider_id, \
+            m.upc, \
+            m.parental_advisory, \
+            m.batch_id, \
+            m.qastatus, \
+            m.num_of_images, \
+            m.date_published, \
             l.status AS licensor_status, \
             l.is_public, \
             l.name AS licensor_name, \
@@ -754,7 +953,6 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
-            m.id as media_id, m.*, \
             GROUP_CONCAT(DISTINCT ma.\`name\`) AS 'people.artist[]', \
             GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
             dsp.\`name\` AS data_source_provider_name, \
@@ -763,6 +961,8 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT tmp_music_label.\`name\` FROM music_label AS music_label WHERE tmp_music_label.id = m.label_id) AS 'labelName[]', \
+            (SELECT COUNT(DISTINCT tmp_music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
             (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
@@ -793,8 +993,6 @@ function getQueryForMusicAlbum()
         LEFT JOIN media_language AS ml ON ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}' \
         LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
         LEFT JOIN licensors AS l ON l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
-        LEFT JOIN music AS music ON music.album_id = m.id \
-        LEFT JOIN music_label AS music_label ON music_label.id = m.label_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MUSIC_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
