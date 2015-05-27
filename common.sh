@@ -679,7 +679,7 @@ function getQueryForMusicAlbumArtist()
     local query="\
         SELECT CAST(CONCAT('MUSIC_ALBUM_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
-        FROM (SELECT * FROM music_album_artists WHERE id >= ${offset} AND id < ${batchSize}) AS maa \
+        FROM (SELECT * FROM music_album_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
         JOIN music_artist AS a ON a.id = maa.artist_id";
     echo "$query"
 }
@@ -691,7 +691,7 @@ function getQueryForMusicSongArtist()
     local query="\
         SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
-        FROM (SELECT * FROM music_song_artists WHERE id >= ${offset} AND id < ${batchSize}) AS maa \
+        FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
         JOIN music_artist AS a ON a.id = msa.artist_id";
     echo "$query"
 }
@@ -961,7 +961,7 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
-            (SELECT tmp_music_label.\`name\` FROM music_label AS music_label WHERE tmp_music_label.id = m.label_id) AS 'labelName[]', \
+            (SELECT tmp_music_label.\`name\` FROM music_label AS music_label WHERE music_label.id = m.label_id) AS 'labelName[]', \
             (SELECT COUNT(DISTINCT tmp_music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
             (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
