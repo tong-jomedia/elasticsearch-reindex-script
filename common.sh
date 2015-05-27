@@ -230,6 +230,23 @@ function switchAliasByIndex()
     }'
 }
 
+function sendMapping()
+{
+    local mapping=$1
+    local index=$2
+    local indexType=$3
+
+    curl -XPUT $ES_HOST':'$ES_PORT'/'$index'/'
+    curl -XPUT $ES_HOST':'$ES_PORT'/'$index'/_mapping/'$indexType -d '
+    {
+        "'$indexType'" : {
+            "properties" : {
+                '"$mapping"' 
+            }
+        }
+    }'
+}
+
 function importMedia()
 {
     local mediaTypeName=$1
@@ -244,6 +261,7 @@ function importMedia()
     
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
+    # sendMapping "$mapping" "$indexName" "$indexType"
     local jsonString='{
         "type" : "jdbc",
         "jdbc" : {
@@ -401,6 +419,10 @@ function getMappingForBookAuthor()
     local mapping='"people_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
 
@@ -477,6 +499,10 @@ function getMappingForMovieProducer()
     local mapping='"people_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
 
@@ -488,18 +514,24 @@ function getMappingForGameDeveloper()
     local mapping='"people_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
 
     echo "$mapping"
 }
+
 function getQueryForGameDeveloper()
 {
     local offset=$1
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('GAME-DEVELOPER', '-', a.id) AS CHAR) AS _id, \
-             '${GAME_MEDIA_TYPE_NAME}' AS media_type, 'developer' AS people_type, a.*, a.id AS people_id \
+             '${GAME_MEDIA_TYPE_NAME}' AS media_type, 'developer' AS people_type, \
+             a.*, a.id AS people_id, maa.status \
         FROM (SELECT * FROM developer WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN game AS maa ON a.id = maa.developer_id";
     echo "$query"
