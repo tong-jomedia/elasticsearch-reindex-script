@@ -692,7 +692,7 @@ function getQueryForMusicSongArtist()
         SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
         FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
-        JOIN music_artist AS a ON a.id = msa.artist_id";
+        JOIN music_artist AS a ON a.id = maa.artist_id";
     echo "$query"
 }
 
