@@ -961,8 +961,8 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
-            (SELECT tmp_music_label.\`name\` FROM music_label AS music_label WHERE music_label.id = m.label_id) AS 'labelName[]', \
-            (SELECT COUNT(DISTINCT tmp_music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
+            (SELECT music_label.\`name\` FROM music_label AS music_label WHERE music_label.id = m.label_id) AS 'labelName[]', \
+            (SELECT COUNT(DISTINCT music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
             (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
