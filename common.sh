@@ -705,7 +705,7 @@ function getQueryForBook()
             CAST(CONCAT('${BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) AS media_id, \
-            CAST(m.isbn AS CHAR) AS isbn, \
+            m.isbn, \
             m.title, \
             m.author, \
             m.description, \
