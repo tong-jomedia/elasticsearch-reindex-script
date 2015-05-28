@@ -781,7 +781,7 @@ function getQueryForBook()
             (SELECT mss.total_score FROM ${BOOK_SCORES} mss WHERE mss.device_type_id = ${CONSOLE_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
-        FROM (SELECT * FROM book WHERE id >= ${offset} AND id < ${batchSize}) AS m \
+        FROM (SELECT * FROM book WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
         LEFT JOIN book_authors AS bau ON bau.book_id = m.id \
         LEFT JOIN author AS au ON au.id = bau.author_id \
         LEFT JOIN book_artists AS bar ON m.id = bar.book_id \
@@ -892,7 +892,7 @@ function getQueryForMusicSong()
             LEFT JOIN ${MUSIC_SCORES} AS mss \
                 ON mss.id = ma.id AND mss.device_type_id = ${DEFAULT_DEVICE_ID} \
             LEFT JOIN data_source_provider AS dsp ON dsp.id = ma.data_source_provider_id \
-            WHERE m.id >= ${offset} AND m.id < ${batchSize}"
+            WHERE m.seq_id >= ${offset} AND m.seq_id < ${batchSize}"
     echo "$query" 
 }
 
@@ -979,7 +979,7 @@ function getQueryForMusicAlbum()
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${CONSOLE_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
-        FROM (SELECT * FROM music_album WHERE id >= ${offset} AND id < ${batchSize}) AS m \
+        FROM (SELECT * FROM music_album WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
         LEFT JOIN music_album_artists AS maa ON m.id = maa.album_id \
         LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id \
         LEFT JOIN music_album_genres AS mag ON mag.album_id = m.id \
