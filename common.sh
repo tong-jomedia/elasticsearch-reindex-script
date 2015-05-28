@@ -751,7 +751,7 @@ function getQueryForBook()
             m.batch_id, \
             m.num_of_images, \
             m.date_published, \
-            '${BOOK_MEDIA_TYPE_NAME}' AS media_type, m.id AS media_id, \
+            '${BOOK_MEDIA_TYPE_NAME}' AS media_type, \
             l.status AS licensor_status, \
             l.is_public, \
             l.name AS licensor_name, \
