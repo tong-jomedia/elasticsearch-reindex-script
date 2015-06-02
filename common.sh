@@ -720,7 +720,7 @@ function getQueryForMusicSong()
             (SELECT GROUP_CONCAT(DISTINCT \`name\`) \
              FROM music_song_artists msa \
              JOIN music_artist ma On (ma.id = msa.artist_id) \
-             WHERE msa.music_id = m.album_id GROUP BY m.id) AS 'people.artist[]', \
+             WHERE msa.music_id = m.id GROUP BY m.id) AS 'people.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
