@@ -320,6 +320,10 @@ function getMappingForMusicSong()
                     "data_origin_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "date_published" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
     echo "$mapping"
@@ -361,6 +365,10 @@ function getMappingForMusicAlbum()
                     "data_origin_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "date_published" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
     echo "$mapping"
@@ -400,6 +408,10 @@ function getMappingForBook()
                     "isbn" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "date_published" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
     echo "$mapping"
@@ -422,6 +434,10 @@ function getMappingForMovie()
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "date_published" : {
+                        "type": "string",
+                        "index": "not_analyzed"
                     }
                     '
     echo "$mapping"
@@ -442,6 +458,10 @@ function getMappingForGame()
                      },
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "date_published" : {
                         "type": "string",
                         "index": "not_analyzed"
                     }
@@ -468,6 +488,10 @@ function getMappingForSoftware()
                         }
                     },
                     "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "date_published" : {
                         "type": "string",
                         "index": "not_analyzed"
                     }
@@ -766,6 +790,9 @@ function getQueryForBook()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM book_publishers AS bp \
+             JOIN publishers AS p ON p.id = bp.publisher_id \
+             WHERE bp.book_id = m.id) AS 'publisher_name[]', \
             (SELECT mss.total_score FROM ${BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -810,8 +837,10 @@ function getQueryForMusicSong()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            '0000-00-00' AS ma_release_date, \
+            m.status AS licensor_status, \
             CAST(ma.id AS CHAR) AS id, \
-            CAST(ma.id AS CHAR) as media_id, \
+            CAST(m.id AS CHAR) as media_id, \
             CAST(m.label_id AS CHAR) AS label_id, \
             CAST(m.album_id AS CHAR) AS album_id, \
             CAST(m.data_origin_id AS CHAR) AS data_origin_id, \
@@ -878,11 +907,15 @@ function getQueryForMusicSong()
             (SELECT GROUP_CONCAT(DISTINCT \`name\`) \
              FROM music_song_artists msa \
              JOIN music_artist ma On (ma.id = msa.artist_id) \
-             WHERE msa.music_id = m.album_id GROUP BY m.id) AS 'people.artist[]', \
+             WHERE msa.music_id = m.id GROUP BY m.id) AS 'people.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
-             WHERE mg.music_id = m.album_id GROUP BY m.album_id) AS 'genre[]', \
+             WHERE mg.music_id = m.id GROUP BY m.id) AS 'genre[]', \
+             (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+             FROM music_genres mg \
+             JOIN genre_music gm ON (gm.id = mg.genre_id) \
+             WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]', \
             (SELECT GROUP_CONCAT(CAST(CONCAT_WS('-', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id,\
              mfo.format, mfo.bitrate) AS CHAR)) \
@@ -955,6 +988,7 @@ function getQueryForMusicAlbum()
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             GROUP_CONCAT(DISTINCT ma.\`name\`) AS 'people.artist[]', \
             GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
+            CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) AS 'gracenote_id[]', \
             dsp.\`name\` AS data_source_provider_name, \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
@@ -1026,6 +1060,8 @@ function getQueryForMovie()
             bc.brightcove_id, bc.non_drm_brightcove_id, \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT GROUP_CONCAT(DISTINCT bms.title) FROM _biz__ma_serie AS bms \
+             WHERE bms.movie_id = m.id AND bms.status = 1) AS 'serie_title[]', \
             (SELECT mss.total_score FROM ${MOVIE_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -1096,6 +1132,8 @@ function getQueryForGame()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT GROUP_CONCAT(s.\`name\`) FROM studio AS s \
+             WHERE s.id = m.studio_id) AS 'studio_name[]', \
             (SELECT mss.total_score FROM ${GAME_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
