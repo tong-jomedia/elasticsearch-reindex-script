@@ -986,18 +986,25 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
-            GROUP_CONCAT(DISTINCT ma.\`name\`) AS 'people.artist[]', \
-            GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
             CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) AS 'gracenote_id[]', \
             dsp.\`name\` AS data_source_provider_name, \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
-            GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT music_label.\`name\` FROM music_label AS music_label WHERE music_label.id = m.label_id) AS 'labelName[]', \
             (SELECT COUNT(DISTINCT music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
             (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
+            (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
+             LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist[]', \
+            (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
+             AS data_source_provider_name, \
+            (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) FROM music_album_genres AS mag \
+             LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
+             WHERE mag.album_id = m.id ) AS 'genre[]', \
+            (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
+             LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
+             WHERE ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}') AS 'languages[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -1014,19 +1021,12 @@ function getQueryForMusicAlbum()
              AND mss.id = m.id ) \
              AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
         FROM (SELECT * FROM music_album WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
-        LEFT JOIN music_album_artists AS maa ON m.id = maa.album_id \
-        LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id \
-        LEFT JOIN music_album_genres AS mag ON mag.album_id = m.id \
-        LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
-        LEFT JOIN data_source_provider AS dsp ON dsp.id = m.data_source_provider_id \
         LEFT JOIN ${MEDIA_GEO_RESTRICT_TABLE_NAME} AS mgr \
             ON m.id = mgr.media_id AND mgr.status = 'active' \
             AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
+        LEFT JOIN licensors AS l ON l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
         LEFT JOIN content_filters_medias AS cfm ON m.id = cfm.media_id AND cfm.media_type = '${MUSIC_MEDIA_TYPE_NAME}' \
         LEFT JOIN content_filters cf ON cf.id = cfm.filter_id \
-        LEFT JOIN media_language AS ml ON ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}' \
-        LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
-        LEFT JOIN licensors AS l ON l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
         LEFT JOIN site_content_filter_exclusions AS scfe \
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${MUSIC_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
