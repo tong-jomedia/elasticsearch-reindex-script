@@ -912,7 +912,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'genre[]', \
-             (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
