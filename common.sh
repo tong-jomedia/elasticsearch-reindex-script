@@ -912,7 +912,7 @@ function getQueryForMusicSong()
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'genre[]', \
-             (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
@@ -986,8 +986,6 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
-            CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) AS 'gracenote_id[]', \
-            dsp.\`name\` AS data_source_provider_name, \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
@@ -1005,6 +1003,10 @@ function getQueryForMusicAlbum()
             (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
              LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
              WHERE ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}') AS 'languages[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+             FROM music_album_genres mg \
+             JOIN genre_music gm ON (gm.id = mg.genre_id) \
+             WHERE mg.album_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
