@@ -18,6 +18,7 @@ MOVIE_SCORES="movie_scores"
 MUSIC_SCORES="music_scores"
 SOFTWARE_SCORES="software_scores"
 AUDIO_BOOK_SCORES="audio_book_scores"
+ES_PEOPLE_INDEX="people"
 
 DEFAULT_DEVICE_ID=1
 
