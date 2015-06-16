@@ -16,13 +16,14 @@ while true; do
             break;;
         [mM]a* ) 
             echo "Reindex Music Album"; 
-            importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX";
-            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
+            importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX" "seq_id"
+            checkReindexFinshed "$ES_MUSIC_ALBUM_INDEX" "media"
             break;;
         [mM]s* ) 
             echo "Reindex Music Song"; 
             importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX";
             compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
             break;;
         [mM]o* ) 
             echo "Reindex Movie"; 
