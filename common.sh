@@ -192,7 +192,7 @@ function checkReindexFinshed
     local indexType=$2
     local exitChecking=0
     local timeOutCounter=0
-    local indexName="${ENV_PREFIX}river_index_${indexPrefix}_v${nextIndexVersion}${indexType}"
+    local indexName="${ENV_PREFIX}river_index_${indexPrefix}_v${nextIndexVersion}_${indexType}"
     while [ $exitChecking -ne 1 ]
     do
         sleep $CHECK_INTERVAL
