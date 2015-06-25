@@ -322,10 +322,9 @@ function getMappingForMusicSong()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
     echo "$mapping"
 }
 function getMappingForMusicAlbum()
@@ -367,10 +366,9 @@ function getMappingForMusicAlbum()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
     echo "$mapping"
 }
 
@@ -410,10 +408,9 @@ function getMappingForBook()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
     echo "$mapping"
 }
 
@@ -436,10 +433,9 @@ function getMappingForMovie()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
     echo "$mapping"
 }
 function getMappingForGame()
@@ -462,10 +458,9 @@ function getMappingForGame()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
 
     echo "$mapping"
 }
@@ -492,10 +487,9 @@ function getMappingForSoftware()
                         "index": "not_analyzed"
                     },
                     "date_published" : {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                    '
+                        "type": "date",
+                        "format" : "dateOptionalTime"
+                    }'
     echo "$mapping"
 }
 
