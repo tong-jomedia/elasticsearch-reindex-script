@@ -530,6 +530,7 @@ function getQueryForMusicSong()
             dsp.\`name\` AS data_source_provider_name, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
+            m.status AS licensor_status, \
             CAST(CONCAT_WS('-', '${MUSIC_MEDIA_TYPE_ID}', ma.id, m.id) AS CHAR) AS _id, \
             (SELECT GROUP_CONCAT(mgr.restrict_type) \
              FROM media_geo_restrict mgr \
