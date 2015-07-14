@@ -526,9 +526,14 @@ function getQueryForMusicSong()
     local offset=$1
     local batchSize=$2
     local query="\
-        SELECT 0 AS episode_id, ma.id AS id, ma.id as media_id, m.*, m.id AS song_id, \
+        SELECT 0 AS episode_id, ma.id AS id, m.id as media_id, m.*, m.id AS song_id, \
             dsp.\`name\` AS data_source_provider_name, \
+            '0000-00-00' AS ma_release_date, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+             FROM music_genres mg \
+             JOIN genre_music gm ON (gm.id = mg.genre_id) \
+             WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             ma.title AS album_title, \
             m.status AS licensor_status, \
             CAST(CONCAT_WS('-', '${MUSIC_MEDIA_TYPE_ID}', ma.id, m.id) AS CHAR) AS _id, \
@@ -582,6 +587,10 @@ function getQueryForMusicAlbum()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
+             FROM music_album_genres mg \
+             JOIN genre_music gm ON (gm.id = mg.genre_id) \
+             WHERE mg.album_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist[]', \
             (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
