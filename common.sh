@@ -347,6 +347,7 @@ function getMappingForBook()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
@@ -365,7 +366,8 @@ function getMappingForBook()
 }
 function getMappingForMusicSong()
 {
-    local mapping='"people" : {
+    local mapping='"genre" : {"type": "string", index: "not_analyzed"},
+                   "people" : {
                         "type" : "nested",
                         "include_in_parent" : true,
                         "properties" : {
@@ -383,6 +385,7 @@ function getMappingForMusicAlbum()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
@@ -403,6 +406,7 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
@@ -420,6 +424,7 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "game_type" : {
                         "type" : "string",
                         "store" : "yes",
@@ -443,6 +448,7 @@ function getMappingForSoftware()
                             "software_type" : {"type": "string"}
                         }
                     },
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
