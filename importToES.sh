@@ -10,12 +10,12 @@ nextIndexVersion=$((currentIndexVersion + 1))
 echo $nextIndexVersion
 #deleteCurrentIndex
 #deleteAllIndex
-importMedia "Software" "software" "$ES_SOFTWARE_INDEX"
-importMedia "Game" "game" "$ES_GAME_INDEX"
-importMedia "Book" "book" "$ES_BOOK_INDEX"
-importMedia "Movie" "movie" "$ES_MOVIE_INDEX"
-importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX"
-importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX"
+importMedia "Software" "software" "$ES_SOFTWARE_INDEX" "id"
+importMedia "Game" "game" "$ES_GAME_INDEX" "id"
+importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id"
+importMedia "Movie" "movie" "$ES_MOVIE_INDEX" "id"
+importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX" "seq_id"
+importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX" "seq_id"
 
 checkReindexFinshed "$ES_GAME_INDEX"
 checkReindexFinshed "$ES_BOOK_INDEX"
