@@ -861,7 +861,7 @@ function getQueryForMusicSong()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
-            '0000-00-00' AS ma_release_date, \
+            '1979-01-01' AS ma_release_date, \
             m.status AS licensor_status, \
             CAST(ma.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) as media_id, \
