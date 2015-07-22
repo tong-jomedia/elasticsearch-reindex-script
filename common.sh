@@ -379,8 +379,8 @@ function getMappingForMusicSong()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
@@ -429,8 +429,8 @@ function getMappingForMusicAlbum()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
@@ -477,8 +477,8 @@ function getMappingForBook()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
@@ -508,8 +508,8 @@ function getMappingForMovie()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
@@ -539,8 +539,8 @@ function getMappingForGame()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
@@ -574,8 +574,8 @@ function getMappingForSoftware()
                         "index": "not_analyzed"
                     },
                     "ma_release_date" : {
-                        "type": "string",
-                        "index": "not_analyzed"
+                        "format" : "dateOptionalTime",
+                        "type" : "date"
                     },
                     "date_published" : {
                         "type": "string",
