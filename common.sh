@@ -928,7 +928,7 @@ function getQueryForMusicSong()
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP By m.album_id) AS 'restrict.date[]', \
-            (SELECT GROUP_CONCAT(DISTINCT \`mar.name\`) \
+            (SELECT GROUP_CONCAT(DISTINCT mar.\`name\`) \
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people.artist[]', \
