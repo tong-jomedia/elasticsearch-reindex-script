@@ -343,8 +343,8 @@ function importMedia()
         }
     }'
     local riverIndex="${indexName}_${indexType}"
-    echo "${jsonString}" | cat > $baseDir'/../tmpData/'$mediaTypeName
-    curl -XPUT $ES_HOST':'$ES_PORT'/_river/river_'$riverIndex'/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
+    echo "${jsonString}" | cat > $tmpDataDir'/'$mediaTypeName
+    curl -XPUT $ES_HOST':'$ES_PORT'/_river/river_'$riverIndex'/_meta' -d @$tmpDataDir'/'$mediaTypeName
 
 }
 
