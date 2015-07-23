@@ -974,7 +974,8 @@ function getQueryForMusicSong()
             m.parental_advisory, \
             m.qastatus, \
             m.batch_id, \
-            dsp.\`name\` AS data_source_provider_name, \
+            (SELECT dsp.\`name\` FROM data_source_provider AS dsp \
+             WHERE dsp.id = ma.data_source_provider_id) AS data_source_provider_name, \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             ma.title AS album_title, \
             CAST(CONCAT_WS('-', '${MUSIC_MEDIA_TYPE_ID}', ma.id, m.id) AS CHAR) AS _id, \
@@ -992,8 +993,8 @@ function getQueryForMusicSong()
              GROUP By m.album_id) AS 'restrict.date[]', \
             (SELECT GROUP_CONCAT(DISTINCT mar.\`name\`) \
              FROM music_song_artists msa \
-             JOIN music_artist mar On (mar.id = msa.artist_id) \
-             WHERE msa.music_id = song_id GROUP BY m.id) AS 'people.artist[]', \
+             JOIN music_artist mar ON (mar.id = msa.artist_id) \
+             WHERE msa.music_id = song_id) AS 'people.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
@@ -1008,9 +1009,6 @@ function getQueryForMusicSong()
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
             FROM music m \
             JOIN music_album AS ma ON m.album_id = ma.id \
-            LEFT JOIN ${MUSIC_SCORES} AS mss \
-                ON mss.id = ma.id AND mss.device_type_id = ${DEFAULT_DEVICE_ID} \
-            LEFT JOIN data_source_provider AS dsp ON dsp.id = ma.data_source_provider_id \
             WHERE m.seq_id >= ${offset} AND m.seq_id < ${batchSize}"
     echo "$query" 
 }
