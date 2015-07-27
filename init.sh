@@ -4,10 +4,11 @@ baseDir=`dirname "${BASH_SOURCE[0]}"`
 sharedDir="${baseDir}/../../shared"
 
 if [ ! -z "$env" ] 
+then
     source "${sharedDir}/config/${env}/config.sh"
 else
     source "${sharedDir}/config/config.sh"
-
+fi
 tmpDataDir="${sharedDir}/tmpData"
 
 ES_BOOK_INDEX="book"
