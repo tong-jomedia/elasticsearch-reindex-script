@@ -221,7 +221,7 @@ function saveToS3Snapshot
     curl -XPUT $ES_HOST':'$ES_PORT'/_snapshot/'$BACKUP_REPO -d '{
         "type": "s3",
         "settings": {
-            "bucket": "pl2-s3-us-east-1-sync-staging",
+            "bucket": "'$AWS_BUCKET_NAME'",
             "region": "us-east-1",
             "access_key": "'$AWS_ACCESS_KEY'",
             "secret_key": "'$AWS_SECRET_KEY'",
