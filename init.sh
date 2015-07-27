@@ -1,7 +1,13 @@
 #!/bin/bash
+env=$1
 baseDir=`dirname "${BASH_SOURCE[0]}"`
 sharedDir="${baseDir}/../../shared"
-source "${sharedDir}/config/config.sh"
+
+if [ ! -z "$env" ] 
+    source "${sharedDir}/config/${env}/config.sh"
+else
+    source "${sharedDir}/config/config.sh"
+
 tmpDataDir="${sharedDir}/tmpData"
 
 ES_BOOK_INDEX="book"
