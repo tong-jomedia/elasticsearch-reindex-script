@@ -357,7 +357,7 @@ function getMappingForMusicSong()
                             "artist" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "id" : {
                         "type": "string",
                         "index": "not_analyzed"
@@ -398,7 +398,7 @@ function getMappingForMusicAlbum()
                             "artist" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "id" : {
                         "type": "string",
@@ -450,7 +450,7 @@ function getMappingForBook()
                             "artist" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
@@ -501,7 +501,7 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
@@ -527,7 +527,7 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "game_type" : {
                         "type" : "string",
                         "store" : "yes",
@@ -559,7 +559,7 @@ function getMappingForSoftware()
                             "software_type" : {"type": "string"}
                         }
                     },
-                    "genre" : {"type": "string", index: "analyzed"},
+                    "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
                     "membership_exclusion" : {
                         "type" : "nested",
