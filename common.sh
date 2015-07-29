@@ -225,7 +225,7 @@ function saveToS3Snapshot
             "region": "us-east-1",
             "access_key": "'$AWS_ACCESS_KEY'",
             "secret_key": "'$AWS_SECRET_KEY'",
-            "base_path": "s1"
+            "base_path": "'$AWS_BUCKET_BASE_DIR'"
         }
     }'
     local snapshotFile=$SNAPSHOT_PREFIX'_v'$nextIndexVersion
@@ -274,7 +274,7 @@ function touchDoneFileToS3
         touch "${baseDir}/${LOCAL_DONE_FOLDER}/${oneRegin}"
     done
 
-    aws s3 sync ${baseDir}/${LOCAL_DONE_FOLDER}/ s3://pl2-s3-us-east-1-sync-staging/s1/${S3_DONE_FOLDER} --region=us-east-1
+    aws s3 sync ${baseDir}/${LOCAL_DONE_FOLDER}/ s3://${AWS_BUCKET_NAME}/${AWS_BUCKET_BASE_DIR}/${S3_DONE_FOLDER} --region=us-east-1
 }
 
 function getCountOfIndex()
