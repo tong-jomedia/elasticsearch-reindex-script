@@ -18,6 +18,7 @@ ES_MOVIE_INDEX="movie"
 ES_GAME_INDEX="game"
 ES_SOFTWARE_INDEX="software"
 ES_AUDIO_BOOK_INDEX="audio_book" 
+ES_PEOPLE_INDEX="people"
 
 BOOK_SCORES="book_scores"
 GAME_SCORES="game_scores"
@@ -25,7 +26,6 @@ MOVIE_SCORES="movie_scores"
 MUSIC_SCORES="music_scores"
 SOFTWARE_SCORES="software_scores"
 AUDIO_BOOK_SCORES="audio_book_scores"
-ES_PEOPLE_INDEX="people"
 
 DEFAULT_DEVICE_ID=1
 
