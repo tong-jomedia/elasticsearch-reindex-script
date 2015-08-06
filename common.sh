@@ -273,8 +273,8 @@ function touchDoneFileToS3
     do    
         touch "${baseDir}/${LOCAL_DONE_FOLDER}/${oneRegin}"
     done
-
-    aws s3 sync ${baseDir}/${LOCAL_DONE_FOLDER}/ s3://${AWS_BUCKET_NAME}/${AWS_BUCKET_BASE_DIR}/${S3_DONE_FOLDER} --region=us-east-1
+    local realPath=$(readlink ${baseDir})
+    aws s3 sync ${realPath}/${LOCAL_DONE_FOLDER}/ s3://${AWS_BUCKET_NAME}/${AWS_BUCKET_BASE_DIR}/${S3_DONE_FOLDER} --region=us-east-1
 }
 
 function getCountOfIndex()
