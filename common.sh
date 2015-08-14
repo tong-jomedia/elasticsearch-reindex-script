@@ -763,7 +763,8 @@ function getQueryForMusicSongArtist()
              CAST(a.id AS CHAR) AS people_id, \
              COUNT(maa.music_id) AS total_song \
         FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
-        JOIN music_artist AS a ON a.id = maa.artist_id";
+        JOIN music_artist AS a ON a.id = maa.artist_id \
+        GROUP By a.id";
     echo "$query"
 }
 
