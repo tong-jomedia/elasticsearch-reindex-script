@@ -837,6 +837,7 @@ function getQueryForBook()
             GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM book_publishers AS bp \
@@ -1052,6 +1053,9 @@ function getQueryForMusicAlbum()
             (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
              LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
              WHERE ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}') AS 'languages[]', \
+            (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
+             LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
+             WHERE ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}') AS 'language_codes[]', \
             (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
              FROM music_album_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
@@ -1107,6 +1111,7 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             bc.brightcove_id, bc.non_drm_brightcove_id, \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
@@ -1181,6 +1186,7 @@ function getQueryForGame()
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             IF(gy.game_id IS NULL, 0, 1) AS is_yummy, \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT GROUP_CONCAT(s.\`name\`) FROM studio AS s \
@@ -1244,6 +1250,7 @@ function getQueryForSoftware()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${SOFTWARE_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
