@@ -523,6 +523,48 @@ function getMappingForSoftware()
     echo "$mapping"
 }
 
+function getMappingForAudioBook()
+{
+    local mapping='"people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {"type": "string"},
+                            "narrator" : {"type": "string"}
+                        }
+                    },
+                    "languages" : {"type" : "string"},
+                    "ma_release_date" : {"type" : "date"},
+                    "media_id" : {
+                        "type" : "string", 
+                        "index": "not_analyzed"
+                    },
+                    "id" : {
+                        "type" : "string", 
+                        "index": "not_analyzed"
+                    },
+                    "sorting_score" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "pc" : {"type": "string"}
+                        }
+                    },
+                    "membership_exclusion" : {
+                        "type" : "nested",
+                        "include_in_parent": true,
+                        "properties" : {
+                            "membership_type_id" : {"type": "string"},
+                            "site_id" : {"type": "string"}
+                        }
+                    },
+                    "membership_type_site_exclusion_id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                    '
+    echo "$mapping"
+}
 function getMappingForBookAuthor()
 {
     local mapping='"people_id" : {
@@ -768,6 +810,108 @@ function getQueryForMusicSongArtist()
     echo "$query"
 }
 
+function getQueryForAudioBook()
+{
+    local offset=$1
+    local batchSize=$2
+
+    local query="\
+        SELECT 0 AS episode_id, \
+            CAST(CONCAT('${AUDIO_BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
+            CAST(m.id AS CHAR) AS id, \
+            CAST(m.id AS CHAR) AS media_id, \
+            m.seq_id, \
+            m.isbn_retail, \
+            m.isbn_library, \
+            m.title, \
+            m.subtitle, \
+            m.description, \
+            m.description, \
+            m.licensor_id, \
+            m.data_source_provider_id, \
+            m.data_origin_id, \
+            m.img_url, \
+            m.abridgment, \
+            m.size_in_bytes, \
+            m.runtime, \
+            m.duration, \
+            m.copyright_year, \
+            m.sample_url, \
+            m.grade_level, \
+            m.street_date, \
+            m.times_bestseller_date, \
+            m.common_core, \
+            m.chapterized, \
+            m.title_acquisition_status, \
+            m.metadata_sig, \
+            m.status, \
+            m.batch_id, \
+            m.ma_release_date, \
+            m.date_published, \
+            '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AS media_type, \
+            mgr.restrict_type AS 'restrict.type', \
+            l.status AS licensor_status, \
+            l.is_public, \
+            l.name AS licensor_name, \
+            GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
+            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
+            GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT awa.\`name\`) AS 'awards[]', \
+            GROUP_CONCAT(DISTINCT seab.\`title\`) AS 'series_title[]', \
+            mgr.restrict_type AS 'restrict.type', \
+            GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
+            CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
+            GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
+             AS 'membership_type_site_exclusion_id[]', \
+            cab.duration AS 'chapter[duration]', \
+            cab.part_number AS 'chapter[part_number]', \
+            cab.chapter_number AS 'chapter[charter_number]', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
+             AND mss.id = m.id) \
+             AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${MOBILE_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${MOBILE_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${TABLET_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${TABLET_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${MAC_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${MAC_DEVICE_TYPE_NAME}', \
+            (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${CONSOLE_DEVICE_TYPE_ID} \
+             AND mss.id = m.id ) \
+             AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
+        FROM (SELECT * FROM audio_book WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
+        LEFT JOIN ${MEDIA_GEO_RESTRICT_TABLE_NAME} AS mgr \
+            ON m.id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
+        LEFT JOIN content_filters_medias AS cfm ON m.id = cfm.media_id \
+            AND cfm.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
+        LEFT JOIN content_filters cf ON cf.id = cfm.filter_id \
+        LEFT JOIN audio_book_authors AS aba ON aba.audio_book_id = m.id \
+        LEFT JOIN author AS au ON au.id = aba.author_id \
+        LEFT JOIN audio_book_narrators AS abn ON abn.audio_book_id = m.id
+        LEFT JOIN audio_book_narrator AS nar ON nar.id = abn.narrator_id
+        LEFT JOIN audio_book_genres AS abg ON abg.audio_book_id = m.id \
+        LEFT JOIN genre_book AS gb ON gb.id = abg.genre_id \
+        LEFT JOIN audio_book_awards AS abaw ON abaw.audio_book_id = m.id \
+        LEFT JOIN audio_book_award AS awa ON awa.id = abaw.award_id \
+        LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
+        LEFT JOIN audio_book_serie AS seab ON seab.id = abse.serie_id \
+        LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
+        LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
+        LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
+        LEFT JOIN licensors AS l ON l.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
+        LEFT JOIN site_content_filter_exclusions AS scfe \
+            ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
+        LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
+            ON mtscfe.content_filter_id = cf.id \
+        GROUP BY m.seq_id, cab.chapter_number"
+
+    echo "$query"
+}
 
 function getQueryForBook()
 {

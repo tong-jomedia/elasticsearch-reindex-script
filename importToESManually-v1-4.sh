@@ -39,6 +39,11 @@ while true; do
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX" "id";
             compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
             break;;
+        [aA]b* ) 
+            echo "Reindex Audio Book"; 
+            importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id"
+            compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX"
+            break;;
         [pP]* ) 
             echo "Reindex People"; 
             importMedia "MusicAlbumArtist" "music_album_artists" "$ES_PEOPLE_INDEX" "seq_id" "music_album_artist"
