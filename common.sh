@@ -726,9 +726,21 @@ function getQueryForMusicAlbumArtist()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MUSIC_ALBUM_ARTIST', '-', a.id) AS CHAR) AS _id, \
-             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, \
+             CAST(a.id AS CHAR) AS id, \
+             a.name, \
+             a.date_added, \
+             a.keyword, \
+             a.is_band, \
+             a.status, \
+             a.data_origin_id, \
+             a.data_source_provider_id, \
+             a.data_origin_status, \
+             CAST(a.id AS CHAR) AS people_id, \
+             COUNT(maa.album_id) AS total_album \
         FROM (SELECT * FROM music_album_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
-        JOIN music_artist AS a ON a.id = maa.artist_id";
+        JOIN music_artist AS a ON a.id = maa.artist_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -738,11 +750,23 @@ function getQueryForMusicSongArtist()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
-             '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+             '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, \
+             CAST(a.id AS CHAR) AS id, \
+             a.name, \
+             a.date_added, \
+             a.keyword, \
+             a.is_band, \
+             a.status, \
+             a.data_origin_id, \
+             a.data_source_provider_id, \
+             a.data_origin_status, \
+             CAST(a.id AS CHAR) AS people_id, \
+             COUNT(maa.music_id) AS total_song \
         FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
         JOIN music_artist AS a ON a.id = maa.artist_id";
     echo "$query"
 }
+
 
 function getQueryForBook()
 {
