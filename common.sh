@@ -343,6 +343,10 @@ function getMappingForMusicAlbum()
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "id" : {
                         "type": "string",
                         "index": "not_analyzed"
@@ -394,6 +398,10 @@ function getMappingForBook()
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "membership_exclusion" : {
                         "type" : "nested",
                         "include_in_parent": true,
@@ -444,6 +452,10 @@ function getMappingForMovie()
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
                         "index": "not_analyzed"
@@ -474,6 +486,10 @@ function getMappingForGame()
                         "index":"not_analyzed"
                      },
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
                         "index": "not_analyzed"
@@ -500,6 +516,10 @@ function getMappingForSoftware()
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "membership_exclusion" : {
                         "type" : "nested",
                         "include_in_parent": true,
@@ -534,6 +554,10 @@ function getMappingForAudioBook()
                         }
                     },
                     "languages" : {"type" : "string"},
+                    "language_codes" : {
+                        "type" : "string",
+                        "index": "not_analyzed"
+                    },
                     "ma_release_date" : {"type" : "date"},
                     "media_id" : {
                         "type" : "string", 
@@ -682,9 +706,11 @@ function getQueryForGameDeveloper()
     local query="\
         SELECT CAST(CONCAT('GAME-DEVELOPER', '-', a.id) AS CHAR) AS _id, \
              '${GAME_MEDIA_TYPE_NAME}' AS media_type, 'developer' AS people_type, \
-             a.*, a.id AS people_id, maa.status \
+             a.*, a.id AS people_id, maa.status, \
+             COUNT(maa.game_id) AS total_media \
         FROM (SELECT * FROM developer WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN game AS maa ON a.id = maa.developer_id";
+        JOIN game AS maa ON a.id = maa.developer_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -694,9 +720,11 @@ function getQueryForMovieActor()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MOVIE-ACTOR', '-', a.id) AS CHAR) AS _id, \
-             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'actor' AS people_type, a.*, a.id AS people_id \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'actor' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM actors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN movie_actors AS maa ON a.id = maa.actor_id";
+        JOIN movie_actors AS maa ON a.id = maa.actor_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -706,9 +734,11 @@ function getQueryForMovieDirector()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MOVIE-DIRECTOR', '-', a.id) AS CHAR) AS _id, \
-             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'director' AS people_type, a.*, a.id AS people_id \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'director' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM directors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN movie_directors AS maa ON a.id = maa.director_id";
+        JOIN movie_directors AS maa ON a.id = maa.director_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -718,9 +748,11 @@ function getQueryForMovieWriter()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MOVIE-WRITER', '-', a.id) AS CHAR) AS _id, \
-             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'writer' AS people_type, a.*, a.id AS people_id \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'writer' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM writers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN movie_writers AS maa ON a.id = maa.writer_id";
+        JOIN movie_writers AS maa ON a.id = maa.writer_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -730,9 +762,11 @@ function getQueryForMovieProducer()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('MOVIE-PRODUCER', '-', a.id) AS CHAR) AS _id, \
-             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'producer' AS people_type, a.*, a.id AS people_id \
+             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'producer' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM producers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN movie_producers AS maa ON a.id = maa.producer_id";
+        JOIN movie_producers AS maa ON a.id = maa.producer_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -744,9 +778,11 @@ function getQueryForBookAuthor()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('BOOK_AUTHOR', '-', a.id) AS CHAR) AS _id, \
-             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'author' AS people_type, a.*, a.id AS people_id \
+             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'author' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.book_id) AS total_media \
         FROM (SELECT * FROM author WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN book_authors AS maa ON a.id = maa.author_id";
+        JOIN book_authors AS maa ON a.id = maa.author_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -756,9 +792,11 @@ function getQueryForBookArtist()
     local batchSize=$2
     local query="\
         SELECT CAST(CONCAT('BOOK_ARTSIT', '-', a.id) AS CHAR) AS _id, \
-             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id \
+             '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id, \
+             COUNT(maa.book_id) AS total_media \
         FROM (SELECT * FROM artists WHERE id >= ${offset} AND id < ${batchSize}) AS a \
-        JOIN book_artists AS maa ON a.id = maa.artist_id";
+        JOIN book_artists AS maa ON a.id = maa.artist_id \
+        GROUP BY a.id";
     echo "$query"
 }
 
@@ -779,7 +817,7 @@ function getQueryForMusicAlbumArtist()
              a.data_source_provider_id, \
              a.data_origin_status, \
              CAST(a.id AS CHAR) AS people_id, \
-             COUNT(maa.album_id) AS total_album \
+             COUNT(maa.album_id) AS total_media \
         FROM (SELECT * FROM music_album_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
         JOIN music_artist AS a ON a.id = maa.artist_id \
         GROUP BY a.id";
@@ -803,7 +841,7 @@ function getQueryForMusicSongArtist()
              a.data_source_provider_id, \
              a.data_origin_status, \
              CAST(a.id AS CHAR) AS people_id, \
-             COUNT(maa.music_id) AS total_song \
+             COUNT(maa.music_id) AS total_media \
         FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
         JOIN music_artist AS a ON a.id = maa.artist_id \
         GROUP By a.id";
@@ -853,6 +891,8 @@ function getQueryForAudioBook()
             l.status AS licensor_status, \
             l.is_public, \
             l.name AS licensor_name, \
+            CAST(GROUP_CONCAT(DISTINCT au.id) AS CHAR) AS 'people_id.author[]', \
+            CAST(GROUP_CONCAT(DISTINCT nar.id)AS CHAR) AS 'people_id.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
             GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
@@ -976,12 +1016,14 @@ function getQueryForBook()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
+            CAST(GROUP_CONCAT(DISTINCT au.\`id\`) AS CHAR) AS 'people_id.author[]', \
+            CAST(GROUP_CONCAT(DISTINCT ar.\`id\`) AS CHAR) AS 'people_id.artist[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT ar.\`name\`) AS 'people.artist[]', \
             GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
-            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM book_publishers AS bp \
@@ -1102,6 +1144,10 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people.artist[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT mar.\`id\`) AS CHAR) \
+             FROM music_song_artists msa \
+             JOIN music_artist mar On (mar.id = msa.artist_id) \
+             WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_id.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
@@ -1187,8 +1233,12 @@ function getQueryForMusicAlbum()
             (SELECT music_label.\`name\` FROM music_label AS music_label WHERE music_label.id = m.label_id) AS 'labelName[]', \
             (SELECT COUNT(DISTINCT music.id) FROM music WHERE music.album_id = m.id) AS song_count, \
             (SELECT GROUP_CONCAT(music.title) FROM music WHERE music.album_id = m.id) AS 'music_songs.title[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT ma.\`id\`) AS CHAR) FROM music_album_artists AS maa  \
+             LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people_id.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist[]', \
+            (SELECT GROUP_CONCAT(DISTINCT ma.\`id\`) FROM music_album_artists AS maa  \
+             LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist_id[]', \
             (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
              AS data_source_provider_name, \
             (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) FROM music_album_genres AS mag \
@@ -1248,6 +1298,10 @@ function getQueryForMovie()
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, \
             m.id AS media_id, \
+            CAST(GROUP_CONCAT(DISTINCT ac.\`id\`) AS CHAR) AS 'people_id.actor[]', \
+            CAST(GROUP_CONCAT(DISTINCT di.\`id\`) AS CHAR) AS 'people_id.director[]', \
+            CAST(GROUP_CONCAT(DISTINCT pr.\`id\`) AS CHAR) AS 'people_id.producer[]', \
+            CAST(GROUP_CONCAT(DISTINCT wr.\`id\`) AS CHAR) AS 'people_id.writer[]', \
             GROUP_CONCAT(DISTINCT ac.\`name\`) AS 'people.actor[]', \
             GROUP_CONCAT(DISTINCT di.\`name\`) AS 'people.director[]', \
             GROUP_CONCAT(DISTINCT pr.\`name\`) AS 'people.producer[]', \
@@ -1255,7 +1309,7 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
-            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             bc.brightcove_id, bc.non_drm_brightcove_id, \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
@@ -1320,6 +1374,7 @@ function getQueryForGame()
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${GAME_MEDIA_TYPE_NAME}' AS media_type, \
             m.id AS media_id, m.*, \
+            CAST(GROUP_CONCAT(DISTINCT de.\`id\`) AS CHAR) AS 'people_id.developer[]', \
             GROUP_CONCAT(DISTINCT de.\`name\`) AS 'people.developer[]', \
             GROUP_CONCAT(DISTINCT gy.\`CategoryName\`) AS 'category.name[]', \
             GROUP_CONCAT(DISTINCT gy.\`OS\`) AS 'category.os[]', \
@@ -1330,7 +1385,7 @@ function getQueryForGame()
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             IF(gy.game_id IS NULL, 0, 1) AS is_yummy, \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
-            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT GROUP_CONCAT(s.\`name\`) FROM studio AS s \
@@ -1388,13 +1443,14 @@ function getQueryForSoftware()
             '${SOFTWARE_MEDIA_TYPE_NAME}' AS media_type, \
             m.id AS media_id, m.*, \
             GROUP_CONCAT(DISTINCT m.platform) AS 'category', \
+            CAST(GROUP_CONCAT(DISTINCT st.\`id\`) AS CHAR) AS 'people_id.softwareType[]', \
             GROUP_CONCAT(DISTINCT st.\`name\`) AS 'people.softwareType[]', \
             GROUP_CONCAT(DISTINCT st_platform.\`name\`) AS 'software_platform[]', \
             GROUP_CONCAT(DISTINCT sc.\`name\`) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
-            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_odes[]', \
+            GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
             (SELECT mss.total_score FROM ${SOFTWARE_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
