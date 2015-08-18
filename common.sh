@@ -931,15 +931,15 @@ function getQueryForAudioBook()
             AND cfm.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
         LEFT JOIN content_filters cf ON cf.id = cfm.filter_id \
         LEFT JOIN audio_book_authors AS aba ON aba.audio_book_id = m.id \
-        LEFT JOIN author AS au ON au.id = aba.author_id \
+        LEFT JOIN author_audio_book AS au ON au.id = aba.author_id \
         LEFT JOIN audio_book_narrators AS abn ON abn.audio_book_id = m.id
-        LEFT JOIN audio_book_narrator AS nar ON nar.id = abn.narrator_id
+        LEFT JOIN narrator_audio_book AS nar ON nar.id = abn.narrator_id
         LEFT JOIN audio_book_genres AS abg ON abg.audio_book_id = m.id \
-        LEFT JOIN genre_book AS gb ON gb.id = abg.genre_id \
+        LEFT JOIN genre_audio_book AS gb ON gb.id = abg.genre_id \
         LEFT JOIN audio_book_awards AS abaw ON abaw.audio_book_id = m.id \
-        LEFT JOIN audio_book_award AS awa ON awa.id = abaw.award_id \
+        LEFT JOIN award_audio_book AS awa ON awa.id = abaw.award_id \
         LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
-        LEFT JOIN audio_book_serie AS seab ON seab.id = abse.serie_id \
+        LEFT JOIN serie_audio_book AS seab ON seab.id = abse.serie_id \
         LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
         LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
         LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
