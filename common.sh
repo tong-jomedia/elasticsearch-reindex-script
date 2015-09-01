@@ -249,6 +249,8 @@ function sendMapping()
     }'
 }
 
+
+
 function importMedia()
 {
     local mediaTypeName=$1
@@ -263,6 +265,18 @@ function importMedia()
     
     local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName" "$keyName")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
+
+    if [ -z "$5" ]; then
+        local indexMapping='
+            "'$indexType'" : {
+                "properties" : {
+                    '"$mapping"' 
+                }
+            }';
+    else
+        local indexMapping=$(getPeopleMapping)
+    fi
+
     # sendMapping "$mapping" "$indexName" "$indexType"
     local jsonString='{
         "type" : "jdbc",
@@ -276,22 +290,57 @@ function importMedia()
             "maxbulkactions" : 10000,
             "maxconcurrrentbulkactions": 10,
             "fetchsize" : 100,
-            "sql" : ['"$query"'],
-            "type_mapping" : {
-                "'$indexType'" : {
-                    "properties" : {
-                        '"$mapping"' 
+            "sql" : ['"$query"']
+        }
+    }'
+
+#            "type_mapping" : {'"$indexMapping"'}
+    local riverIndex="${indexName}_${indexType}"
+    echo "${jsonString}" | cat > $baseDir'/../tmpData/'$mediaTypeName
+#                                "lowercase", 
+#                                "keyword_repeat",
+#                                "asciifolding",  
+#                                "porter_stem", 
+#                                "unique_stem",
+    curl -XPUT $ES_HOST':'$ES_PORT'/'${indexName}'/' -d ' 
+    {
+        "settings" : {
+             "index": {
+                "analysis": {
+                    "filter": {
+                        "soundex": { 
+                            "type":    "phonetic",
+                            "encoder": "soundex"
+                        },
+                        "dbl_metaphone": { 
+                            "type":    "phonetic",
+                            "encoder": "doublemetaphone"
+                        },
+                        "unique_stem": {
+                            "type": "unique",
+                            "only_on_same_position": true 
+                        }
+                    },
+                    "analyzer": {
+                        "mix_search": {
+                            "tokenizer": "standard",
+                            "filter": [
+                                "lowercase", 
+                                "keyword_repeat",
+                                "asciifolding",  
+                                "unique_stem",
+                                "porter_stem" 
+                            ] 
+                        }
                     }
                 }
             }
-
-        }
+        },
+        "mappings" : {'"$indexMapping"'}
     }'
-    local riverIndex="${indexName}_${indexType}"
-    echo "${jsonString}" | cat > $baseDir'/../tmpData/'$mediaTypeName
     curl -XPUT $ES_HOST':'$ES_PORT'/_river/river_'$riverIndex'/_meta' -d @$baseDir'/../tmpData/'$mediaTypeName
 
-}
+} 
 function getMappingForMusicSong()
 {
     local mapping='"people" : {
@@ -299,6 +348,13 @@ function getMappingForMusicSong()
                         "include_in_parent" : true,
                         "properties" : {
                             "artist" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -329,7 +385,30 @@ function getMappingForMusicSong()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
     echo "$mapping"
 }
 function getMappingForMusicAlbum()
@@ -339,6 +418,13 @@ function getMappingForMusicAlbum()
                         "include_in_parent" : true,
                         "properties" : {
                             "artist" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -382,7 +468,30 @@ function getMappingForMusicAlbum()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "artist" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
     echo "$mapping"
 }
 
@@ -394,6 +503,14 @@ function getMappingForBook()
                         "properties" : {
                             "author" : {"type": "string"},
                             "artist" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {"type": "string", index: "not_analyzed"},
+                            "artist" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -411,6 +528,10 @@ function getMappingForBook()
                         }
                     },
                     "id" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "status" : {
                         "type": "string",
                         "index": "not_analyzed"
                     },
@@ -433,7 +554,34 @@ function getMappingForBook()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            },
+                            "artist" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
     echo "$mapping"
 }
 
@@ -448,6 +596,16 @@ function getMappingForMovie()
                             "director" : {"type": "string"},
                             "producer" : {"type": "string"},
                             "writer" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "actor" : {"type": "string","position_offset_gap": 100, index: "not_analyzed"},
+                            "director" : {"type": "string", index: "not_analyzed"},
+                            "producer" : {"type": "string", index: "not_analyzed"},
+                            "writer" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -467,7 +625,42 @@ function getMappingForMovie()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "actor" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            },
+                            "producer" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            },
+                            "director" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            },
+                            "writer" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
     echo "$mapping"
 }
 function getMappingForGame()
@@ -477,6 +670,13 @@ function getMappingForGame()
                         "include_in_parent" : true,
                         "properties" : {
                             "developer" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "developer" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -501,7 +701,30 @@ function getMappingForGame()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "developer" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
 
     echo "$mapping"
 }
@@ -512,6 +735,13 @@ function getMappingForSoftware()
                         "include_in_parent" : true,
                         "properties" : {
                             "software_type" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "software_type" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "genre" : {"type": "string", index: "not_analyzed"},
@@ -539,7 +769,30 @@ function getMappingForSoftware()
                     "date_published" : {
                         "type": "date",
                         "format" : "dateOptionalTime"
-                    }'
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "software_type" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }
+                    '
     echo "$mapping"
 }
 
@@ -551,6 +804,14 @@ function getMappingForAudioBook()
                         "properties" : {
                             "author" : {"type": "string"},
                             "narrator" : {"type": "string"}
+                        }
+                    },
+                    "people_not_analyzed" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {"type": "string", index: "not_analyzed"},
+                            "narrator" : {"type": "string", index: "not_analyzed"}
                         }
                     },
                     "languages" : {"type" : "string"},
@@ -585,10 +846,187 @@ function getMappingForAudioBook()
                     "membership_type_site_exclusion_id" : {
                         "type": "string",
                         "index": "not_analyzed"
-                    }
-                    '
+                    },
+                    "analyzer_title": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_genre": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },                   
+                    "analyzer_content_segments": {
+                        "type": "string",
+                        "analyzer": "mix_search"
+                    },
+                    "analyzer_people" : {
+                        "type" : "nested",
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "author" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            },
+                            "narrator" : {
+                                "type": "string",
+                                "analyzer": "mix_search"
+                            }
+                        }
+                    }'
     echo "$mapping"
 }
+
+function getPeopleMapping()
+{
+    local mapping='
+        "book_author": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "book_artist": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "music_album_artist": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "music_song_artist": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "movie_actor": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "movie_writer": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "movie_producer": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "movie_director": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        },
+        "game_developer": {
+            "properties" : {
+                "people_id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id" : {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "analyzer_name": {
+                    "type": "string",
+                    "analyzer": "mix_search"
+                }
+            }
+        }'
+
+    echo "$mapping"
+}
+
 function getMappingForBookAuthor()
 {
     local mapping='"people_id" : {
@@ -707,7 +1145,7 @@ function getQueryForGameDeveloper()
         SELECT CAST(CONCAT('GAME-DEVELOPER', '-', a.id) AS CHAR) AS _id, \
              '${GAME_MEDIA_TYPE_NAME}' AS media_type, 'developer' AS people_type, \
              a.*, a.id AS people_id, maa.status, \
-             COUNT(maa.game_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.id) AS total_media \
         FROM (SELECT * FROM developer WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN game AS maa ON a.id = maa.developer_id \
         GROUP BY a.id";
@@ -721,7 +1159,7 @@ function getQueryForMovieActor()
     local query="\
         SELECT CAST(CONCAT('MOVIE-ACTOR', '-', a.id) AS CHAR) AS _id, \
              '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'actor' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.movie_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM actors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN movie_actors AS maa ON a.id = maa.actor_id \
         GROUP BY a.id";
@@ -735,7 +1173,7 @@ function getQueryForMovieDirector()
     local query="\
         SELECT CAST(CONCAT('MOVIE-DIRECTOR', '-', a.id) AS CHAR) AS _id, \
              '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'director' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.movie_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM directors WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN movie_directors AS maa ON a.id = maa.director_id \
         GROUP BY a.id";
@@ -749,7 +1187,7 @@ function getQueryForMovieWriter()
     local query="\
         SELECT CAST(CONCAT('MOVIE-WRITER', '-', a.id) AS CHAR) AS _id, \
              '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'writer' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.movie_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM writers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN movie_writers AS maa ON a.id = maa.writer_id \
         GROUP BY a.id";
@@ -763,7 +1201,7 @@ function getQueryForMovieProducer()
     local query="\
         SELECT CAST(CONCAT('MOVIE-PRODUCER', '-', a.id) AS CHAR) AS _id, \
              '${MOVIE_MEDIA_TYPE_NAME}' AS media_type, 'producer' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.movie_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.movie_id) AS total_media \
         FROM (SELECT * FROM producers WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN movie_producers AS maa ON a.id = maa.producer_id \
         GROUP BY a.id";
@@ -779,7 +1217,7 @@ function getQueryForBookAuthor()
     local query="\
         SELECT CAST(CONCAT('BOOK_AUTHOR', '-', a.id) AS CHAR) AS _id, \
              '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'author' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.book_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.book_id) AS total_media \
         FROM (SELECT * FROM author WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN book_authors AS maa ON a.id = maa.author_id \
         GROUP BY a.id";
@@ -793,7 +1231,7 @@ function getQueryForBookArtist()
     local query="\
         SELECT CAST(CONCAT('BOOK_ARTSIT', '-', a.id) AS CHAR) AS _id, \
              '${BOOK_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, a.*, a.id AS people_id, \
-             COUNT(maa.book_id) AS total_media \
+             a.name AS analyzer_name, COUNT(maa.book_id) AS total_media \
         FROM (SELECT * FROM artists WHERE id >= ${offset} AND id < ${batchSize}) AS a \
         JOIN book_artists AS maa ON a.id = maa.artist_id \
         GROUP BY a.id";
@@ -808,6 +1246,7 @@ function getQueryForMusicAlbumArtist()
         SELECT CAST(CONCAT('MUSIC_ALBUM_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, \
              CAST(a.id AS CHAR) AS id, \
+             a.name AS analyzer_name, \
              a.name, \
              a.date_added, \
              a.keyword, \
@@ -832,6 +1271,7 @@ function getQueryForMusicSongArtist()
         SELECT CAST(CONCAT('MUSIC_SONG_ARTIST', '-', a.id) AS CHAR) AS _id, \
              '${MUSIC_SONG_MEDIA_TYPE_NAME}' AS media_type, 'artist' AS people_type, \
              CAST(a.id AS CHAR) AS id, \
+             a.name AS analyzer_name, \
              a.name, \
              a.date_added, \
              a.keyword, \
@@ -862,6 +1302,7 @@ function getQueryForAudioBook()
             m.isbn_retail, \
             m.isbn_library, \
             m.title, \
+            m.title AS analyzer_title, \
             m.subtitle, \
             m.description, \
             m.description, \
@@ -895,7 +1336,9 @@ function getQueryForAudioBook()
             CAST(GROUP_CONCAT(DISTINCT nar.id)AS CHAR) AS 'people_id.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
-            GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(au.\`name\`)) AS 'people_not_analyzed.author[]', \
+            GROUP_CONCAT(DISTINCT LOWER(nar.\`name\`)) AS 'people_not_analyzed.narrators[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT awa.\`name\`) AS 'awards[]', \
             GROUP_CONCAT(DISTINCT seab.\`title\`) AS 'series_title[]', \
             mgr.restrict_type AS 'restrict.type', \
@@ -906,9 +1349,12 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
-            cab.duration AS 'chapter[duration]', \
-            cab.part_number AS 'chapter[part_number]', \
-            cab.chapter_number AS 'chapter[charter_number]', \
+            (SELECT cab.duration FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
+             AS 'chapter[duration]', \
+            (SELECT cab.part_number FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
+             AS 'chapter[part_number]', \
+            (SELECT cab.chapter_number FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
+             AS 'chapter[charter_number]', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -940,7 +1386,6 @@ function getQueryForAudioBook()
         LEFT JOIN award_audio_book AS awa ON awa.id = abaw.award_id \
         LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
         LEFT JOIN serie_audio_book AS seab ON seab.id = abse.serie_id \
-        LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
         LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
         LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
         LEFT JOIN licensors AS l ON l.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
@@ -948,7 +1393,7 @@ function getQueryForAudioBook()
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
-        GROUP BY m.seq_id, cab.chapter_number"
+        GROUP BY m.seq_id"
 
     echo "$query"
 }
@@ -964,6 +1409,7 @@ function getQueryForBook()
             CAST(m.id AS CHAR) AS media_id, \
             m.isbn, \
             m.title, \
+            m.title AS analyzer_title, \
             m.author, \
             m.description, \
             m.number_of_pages, \
@@ -1012,15 +1458,22 @@ function getQueryForBook()
             l.status AS licensor_status, \
             l.is_public, \
             l.name AS licensor_name, \
+            (IF (SUBSTRING(download_url, -3) = 'pdf', 0, 1)) AS is_mobile, \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             CAST(GROUP_CONCAT(DISTINCT au.\`id\`) AS CHAR) AS 'people_id.author[]', \
             CAST(GROUP_CONCAT(DISTINCT ar.\`id\`) AS CHAR) AS 'people_id.artist[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT ar.\`name\`) AS 'people.artist[]', \
-            GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT au.\`name\`) AS 'analyzer_people.author[]', \
+            GROUP_CONCAT(DISTINCT ar.\`name\`) AS 'analyzer_people.artist[]', \
+            GROUP_CONCAT(DISTINCT LOWER(au.\`name\`)) AS 'people_not_analyzed.author[]', \
+            GROUP_CONCAT(DISTINCT LOWER(ar.\`name\`)) AS 'people_not_analyzed.artist[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
@@ -1144,11 +1597,15 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people.artist[]', \
+             (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
+             FROM music_song_artists msa \
+             JOIN music_artist mar On (mar.id = msa.artist_id) \
+             WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_not_analyzed.artist[]', \
             (SELECT CAST(GROUP_CONCAT(DISTINCT mar.\`id\`) AS CHAR) \
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_id.artist[]', \
-            (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) \
+             (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'genre[]', \
@@ -1237,11 +1694,13 @@ function getQueryForMusicAlbum()
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people_id.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist[]', \
+             (SELECT GROUP_CONCAT(DISTINCT LOWER(ma.\`name\`)) FROM music_album_artists AS maa  \
+             LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people_not_analyzed.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`id\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist_id[]', \
             (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
              AS data_source_provider_name, \
-            (SELECT GROUP_CONCAT(DISTINCT gm.\`name\`) FROM music_album_genres AS mag \
+             (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) FROM music_album_genres AS mag \
              LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
              WHERE mag.album_id = m.id ) AS 'genre[]', \
             (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
@@ -1306,7 +1765,11 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT di.\`name\`) AS 'people.director[]', \
             GROUP_CONCAT(DISTINCT pr.\`name\`) AS 'people.producer[]', \
             GROUP_CONCAT(DISTINCT wr.\`name\`) AS 'people.writer[]', \
-            GROUP_CONCAT(DISTINCT gm.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(ac.\`name\`)) AS 'people_not_analyzed.actor[]', \
+            GROUP_CONCAT(DISTINCT LOWER(di.\`name\`)) AS 'people_not_analyzed.director[]', \
+            GROUP_CONCAT(DISTINCT LOWER(pr.\`name\`)) AS 'people_not_analyzed.producer[]', \
+            GROUP_CONCAT(DISTINCT LOWER(wr.\`name\`)) AS 'people_not_analyzed.writer[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
@@ -1376,9 +1839,10 @@ function getQueryForGame()
             m.id AS media_id, m.*, \
             CAST(GROUP_CONCAT(DISTINCT de.\`id\`) AS CHAR) AS 'people_id.developer[]', \
             GROUP_CONCAT(DISTINCT de.\`name\`) AS 'people.developer[]', \
+            GROUP_CONCAT(DISTINCT LOWER(de.\`name\`)) AS 'people_not_analyzed.developer[]', \
             GROUP_CONCAT(DISTINCT gy.\`CategoryName\`) AS 'category.name[]', \
             GROUP_CONCAT(DISTINCT gy.\`OS\`) AS 'category.os[]', \
-            GROUP_CONCAT(DISTINCT gga.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gga.\`name\`)) AS 'genre[]', \
             CAST(GROUP_CONCAT(DISTINCT gt.type_id) AS CHAR) AS 'game_type[]', \
             GROUP_CONCAT(DISTINCT ts.\`name\`) AS 'game_type_name[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
@@ -1445,8 +1909,9 @@ function getQueryForSoftware()
             GROUP_CONCAT(DISTINCT m.platform) AS 'category', \
             CAST(GROUP_CONCAT(DISTINCT st.\`id\`) AS CHAR) AS 'people_id.softwareType[]', \
             GROUP_CONCAT(DISTINCT st.\`name\`) AS 'people.softwareType[]', \
+            GROUP_CONCAT(DISTINCT LOWER(st.\`name\`)) AS 'people_not_analyzed.softwareType[]', \
             GROUP_CONCAT(DISTINCT st_platform.\`name\`) AS 'software_platform[]', \
-            GROUP_CONCAT(DISTINCT sc.\`name\`) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(sc.\`name\`)) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
