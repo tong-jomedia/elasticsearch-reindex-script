@@ -327,6 +327,10 @@ function importMedia()
                         "unique_stem": {
                             "type": "unique",
                             "only_on_same_position": true 
+                        },
+                        "stopword_english": {
+                            "type": "stop",
+                            "stopword": "_english_"
                         }
                     },
                     "analyzer": {
@@ -337,7 +341,8 @@ function importMedia()
                                 "keyword_repeat",
                                 "asciifolding",  
                                 "unique_stem",
-                                "porter_stem" 
+                                "porter_stem",
+                                "stopword_english"
                             ] 
                         }
                     }
