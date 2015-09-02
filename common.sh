@@ -130,7 +130,8 @@ function getImportBySectionQuery()
     local mediaTableName=$2
     local keyName=$3
     local offset=0
-    local batchSize=${LIMIT}
+    local batchSize=$4
+    local limit=$4
 
     local getMaxIdCheckQuery=$(getMaxIdCheckQuery "$mediaTableName" "$keyName")
     local maxId=$(/usr/bin/mysql -h $DB_HOST -u $DB_USER -p"$DB_PASS" -D "$DB_NAME" -e "$getMaxIdCheckQuery" | awk 'NR>1') 
@@ -142,8 +143,8 @@ function getImportBySectionQuery()
 
         local tempQuery='{"statement" : "'$singleImportQuery'"},'
         allQuery=$allQuery$tempQuery
-        offset=$(($offset+$LIMIT))
-        batchSize=$(($offset+$LIMIT))
+        offset=$(($offset+$limit))
+        batchSize=$(($offset+$limit))
     done
 
     local importQuery="${allQuery%?}"
@@ -262,8 +263,15 @@ function importMedia()
     else
         local indexType=$5
     fi
-    
-    local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName" "$keyName")
+
+
+    if [ -z "$6" ]; then
+        local batchSize=$LIMIT
+    else
+        local batchSize=$6
+    fi
+   
+    local query=$(getImportBySectionQuery "$mediaTypeName" "$mediaTableName" "$keyName" "$batchSize")
     local mapping=$(getMapping "$mediaTypeName" "$mediaTableName")
 
     if [ -z "$5" ]; then
@@ -1349,12 +1357,9 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
-            (SELECT cab.duration FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
-             AS 'chapter[duration]', \
-            (SELECT cab.part_number FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
-             AS 'chapter[part_number]', \
-            (SELECT cab.chapter_number FROM audio_book_chapter AS cab WHERE cab.audio_book_id = m.id) \
-             AS 'chapter[charter_number]', \
+            cab.duration AS 'chapter[duration]', \
+            cab.part_number AS 'chapter[part_number]', \
+            cab.chapter_number AS 'chapter[charter_number]', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -1386,6 +1391,7 @@ function getQueryForAudioBook()
         LEFT JOIN award_audio_book AS awa ON awa.id = abaw.award_id \
         LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
         LEFT JOIN serie_audio_book AS seab ON seab.id = abse.serie_id \
+        LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
         LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
         LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
         LEFT JOIN licensors AS l ON l.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
@@ -1393,7 +1399,7 @@ function getQueryForAudioBook()
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
-        GROUP BY m.seq_id"
+        GROUP BY m.seq_id, cab.chapter_number"
 
     echo "$query"
 }

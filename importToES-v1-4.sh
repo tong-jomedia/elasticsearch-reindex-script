@@ -14,7 +14,7 @@ echo $nextIndexVersion
 importMedia "Software" "software" "$ES_SOFTWARE_INDEX" "id"
 importMedia "Game" "game" "$ES_GAME_INDEX" "id"
 importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id"
-importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id"
+importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 100
 importMedia "Movie" "movie" "$ES_MOVIE_INDEX" "id"
 importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX" "seq_id"
 importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX" "seq_id"
