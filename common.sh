@@ -310,20 +310,20 @@ function importMedia()
 #                                "asciifolding",  
 #                                "porter_stem", 
 #                                "unique_stem",
+#                        "soundex": { 
+#                            "type":    "phonetic",
+#                            "encoder": "soundex"
+#                        },
+#                        "dbl_metaphone": { 
+#                            "type":    "phonetic",
+#                            "encoder": "doublemetaphone"
+#                        },
     curl -XPUT $ES_HOST':'$ES_PORT'/'${indexName}'/' -d ' 
     {
         "settings" : {
              "index": {
                 "analysis": {
                     "filter": {
-                        "soundex": { 
-                            "type":    "phonetic",
-                            "encoder": "soundex"
-                        },
-                        "dbl_metaphone": { 
-                            "type":    "phonetic",
-                            "encoder": "doublemetaphone"
-                        },
                         "unique_stem": {
                             "type": "unique",
                             "only_on_same_position": true 
