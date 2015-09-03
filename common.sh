@@ -1362,9 +1362,6 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
-            cab.duration AS 'chapter[duration]', \
-            cab.part_number AS 'chapter[part_number]', \
-            cab.chapter_number AS 'chapter[charter_number]', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -1396,7 +1393,6 @@ function getQueryForAudioBook()
         LEFT JOIN award_audio_book AS awa ON awa.id = abaw.award_id \
         LEFT JOIN audio_book_series AS abse ON abse.audio_book_id = m.id \
         LEFT JOIN serie_audio_book AS seab ON seab.id = abse.serie_id \
-        LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
         LEFT JOIN media_language AS ml On ml.media_id = m.id AND ml.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' \
         LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
         LEFT JOIN licensors AS l ON l.media_type = '${AUDIO_BOOK_MEDIA_TYPE_NAME}' AND l.id = m.licensor_id \
@@ -1404,8 +1400,14 @@ function getQueryForAudioBook()
             ON scfe.content_filter_id = cf.id AND scfe.media_type_id = ${AUDIO_BOOK_MEDIA_TYPE_ID} \
         LEFT JOIN membership_type_site_content_filter_exclusions AS mtscfe \
             ON mtscfe.content_filter_id = cf.id \
-        GROUP BY m.seq_id, cab.chapter_number"
+        GROUP BY m.seq_id"
 
+#            cab.duration AS 'chapter[duration]', \
+#            cab.part_number AS 'chapter[part_number]', \
+#            cab.chapter_number AS 'chapter[charter_number]', \
+
+# LEFT JOIN audio_book_chapter AS cab ON cab.audio_book_id = m.id \
+#, cab.chapter_number
     echo "$query"
 }
 
