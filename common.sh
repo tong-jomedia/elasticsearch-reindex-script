@@ -1349,15 +1349,19 @@ function getQueryForAudioBook()
             CAST(GROUP_CONCAT(DISTINCT nar.id)AS CHAR) AS 'people_id.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
+            GROUP_CONCAT(DISTINCT au.\`name\`) AS 'analyzer_people.author[]', \
+            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'analyzer_people.narrators[]', \
             GROUP_CONCAT(DISTINCT LOWER(au.\`name\`)) AS 'people_not_analyzed.author[]', \
             GROUP_CONCAT(DISTINCT LOWER(nar.\`name\`)) AS 'people_not_analyzed.narrators[]', \
             GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT awa.\`name\`) AS 'awards[]', \
             GROUP_CONCAT(DISTINCT seab.\`title\`) AS 'series_title[]', \
             mgr.restrict_type AS 'restrict.type', \
             GROUP_CONCAT(DISTINCT mgr.country_code ORDER BY mgr.date_start) AS 'restrict.country_code[]', \
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
@@ -1548,6 +1552,7 @@ function getQueryForMusicSong()
             CAST(m.data_origin_id AS CHAR) AS data_origin_id, \
             CAST(m.id AS CHAR) AS song_id, \
             m.title, \
+            m.title AS analyzer_title, \
             m.artist_name, \
             m.description, \
             m.release_date, \
@@ -1610,6 +1615,10 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people.artist[]', \
+            (SELECT GROUP_CONCAT(DISTINCT mar.\`name\`) \
+             FROM music_song_artists msa \
+             JOIN music_artist mar On (mar.id = msa.artist_id) \
+             WHERE msa.music_id = song_id GROUP BY m.id) AS 'analyzer_people.artist[]', \
              (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
@@ -1618,10 +1627,14 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_id.artist[]', \
-             (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'genre[]', \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) \
+             FROM music_genres mg \
+             JOIN genre_music gm ON (gm.id = mg.genre_id) \
+             WHERE mg.music_id = m.id GROUP BY m.id) AS 'analyzer_genre[]', \
             (SELECT CAST(GROUP_CONCAT(DISTINCT gm.gracenote_id) AS CHAR) \
              FROM music_genres mg \
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
@@ -1651,6 +1664,7 @@ function getQueryForMusicAlbum()
             CAST(m.label_id AS CHAR) AS label_id, \
             CAST(m.data_origin_id AS CHAR) AS data_origin_id, \
             m.title, \
+            m.title AS analyzer_title, \
             m.search_title, \
             m.description, \
             m.release_date, \
@@ -1697,6 +1711,7 @@ function getQueryForMusicAlbum()
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${MUSIC_MEDIA_TYPE_NAME}' AS media_type, \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
@@ -1707,15 +1722,20 @@ function getQueryForMusicAlbum()
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people_id.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist[]', \
-             (SELECT GROUP_CONCAT(DISTINCT LOWER(ma.\`name\`)) FROM music_album_artists AS maa  \
+            (SELECT GROUP_CONCAT(DISTINCT ma.\`name\`) FROM music_album_artists AS maa  \
+             LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'analyzer_people.artist[]', \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(ma.\`name\`)) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people_not_analyzed.artist[]', \
             (SELECT GROUP_CONCAT(DISTINCT ma.\`id\`) FROM music_album_artists AS maa  \
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist_id[]', \
             (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
              AS data_source_provider_name, \
-             (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) FROM music_album_genres AS mag \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) FROM music_album_genres AS mag \
              LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
              WHERE mag.album_id = m.id ) AS 'genre[]', \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) FROM music_album_genres AS mag \
+             LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
+             WHERE mag.album_id = m.id ) AS 'analyzer_genre[]', \
             (SELECT GROUP_CONCAT(DISTINCT mal.\`name\`) FROM media_language AS ml \
              LEFT JOIN ma_language AS mal ON mal.id = ml.language_id \
              WHERE ml.media_id = m.id AND ml.media_type = '${MUSIC_MEDIA_TYPE_NAME}') AS 'languages[]', \
@@ -1762,6 +1782,7 @@ function getQueryForMovie()
     local batchSize=$2
     local query="\
         SELECT m.*, \
+            m.title AS analyzer_title, \
             CAST(CONCAT('${MOVIE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, mgr.restrict_type AS 'restrict.type', \
             l.is_public, \
@@ -1778,12 +1799,18 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT di.\`name\`) AS 'people.director[]', \
             GROUP_CONCAT(DISTINCT pr.\`name\`) AS 'people.producer[]', \
             GROUP_CONCAT(DISTINCT wr.\`name\`) AS 'people.writer[]', \
+            GROUP_CONCAT(DISTINCT ac.\`name\`) AS 'analyzer_people.actor[]', \
+            GROUP_CONCAT(DISTINCT di.\`name\`) AS 'analyzer_people.director[]', \
+            GROUP_CONCAT(DISTINCT pr.\`name\`) AS 'analyzer_people.producer[]', \
+            GROUP_CONCAT(DISTINCT wr.\`name\`) AS 'analyzer_people.writer[]', \
             GROUP_CONCAT(DISTINCT LOWER(ac.\`name\`)) AS 'people_not_analyzed.actor[]', \
             GROUP_CONCAT(DISTINCT LOWER(di.\`name\`)) AS 'people_not_analyzed.director[]', \
             GROUP_CONCAT(DISTINCT LOWER(pr.\`name\`)) AS 'people_not_analyzed.producer[]', \
             GROUP_CONCAT(DISTINCT LOWER(wr.\`name\`)) AS 'people_not_analyzed.writer[]', \
             GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
@@ -1850,15 +1877,19 @@ function getQueryForGame()
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${GAME_MEDIA_TYPE_NAME}' AS media_type, \
             m.id AS media_id, m.*, \
+            m.title AS analyzer_title, \
             CAST(GROUP_CONCAT(DISTINCT de.\`id\`) AS CHAR) AS 'people_id.developer[]', \
             GROUP_CONCAT(DISTINCT de.\`name\`) AS 'people.developer[]', \
+            GROUP_CONCAT(DISTINCT de.\`name\`) AS 'analyzer_people.developer[]', \
             GROUP_CONCAT(DISTINCT LOWER(de.\`name\`)) AS 'people_not_analyzed.developer[]', \
             GROUP_CONCAT(DISTINCT gy.\`CategoryName\`) AS 'category.name[]', \
             GROUP_CONCAT(DISTINCT gy.\`OS\`) AS 'category.os[]', \
             GROUP_CONCAT(DISTINCT LOWER(gga.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gga.\`name\`)) AS 'analyzer_genre[]', \
             CAST(GROUP_CONCAT(DISTINCT gt.type_id) AS CHAR) AS 'game_type[]', \
             GROUP_CONCAT(DISTINCT ts.\`name\`) AS 'game_type_name[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             IF(gy.game_id IS NULL, 0, 1) AS is_yummy, \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
@@ -1919,13 +1950,17 @@ function getQueryForSoftware()
             CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) AS 'restrict.date[]', \
             '${SOFTWARE_MEDIA_TYPE_NAME}' AS media_type, \
             m.id AS media_id, m.*, \
+            m.title AS analyzer_title, \
             GROUP_CONCAT(DISTINCT m.platform) AS 'category', \
             CAST(GROUP_CONCAT(DISTINCT st.\`id\`) AS CHAR) AS 'people_id.softwareType[]', \
             GROUP_CONCAT(DISTINCT st.\`name\`) AS 'people.softwareType[]', \
+            GROUP_CONCAT(DISTINCT st.\`name\`) AS 'analyzer_people.softwareType[]', \
             GROUP_CONCAT(DISTINCT LOWER(st.\`name\`)) AS 'people_not_analyzed.softwareType[]', \
             GROUP_CONCAT(DISTINCT st_platform.\`name\`) AS 'software_platform[]', \
             GROUP_CONCAT(DISTINCT LOWER(sc.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(sc.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
+            GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
             GROUP_CONCAT(DISTINCT mal.\`code\`) AS 'language_codes[]', \
