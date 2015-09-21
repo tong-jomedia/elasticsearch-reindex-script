@@ -41,7 +41,7 @@ while true; do
             break;;
         [aA]b* ) 
             echo "Reindex Audio Book"; 
-            importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 100
+            importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 1000
             compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX"
             break;;
         [pP]* ) 

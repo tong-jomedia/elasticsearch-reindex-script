@@ -1323,7 +1323,6 @@ function getQueryForAudioBook()
             m.data_source_provider_id, \
             m.data_origin_id, \
             m.img_url, \
-            m.abridgment, \
             m.size_in_bytes, \
             m.runtime, \
             m.duration, \
@@ -1346,7 +1345,7 @@ function getQueryForAudioBook()
             l.is_public, \
             l.name AS licensor_name, \
             CAST(GROUP_CONCAT(DISTINCT au.id) AS CHAR) AS 'people_id.author[]', \
-            CAST(GROUP_CONCAT(DISTINCT nar.id)AS CHAR) AS 'people_id.narrators[]', \
+            CAST(GROUP_CONCAT(DISTINCT nar.id) AS CHAR) AS 'people_id.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'analyzer_people.author[]', \
@@ -1364,8 +1363,22 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM audio_book_publishers AS bp \
+             JOIN publishers AS p ON p.id = bp.publisher_id \
+             WHERE bp.audio_book_id = m.id) AS 'publisher_name[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            CASE \
+                WHEN abridgment = 'Abridged' THEN 'Abridged' \
+                WHEN abridgment = 'Unabridged' THEN 'Unabridged' \
+                ELSE '' \
+            END AS abridgment, \
+            (SELECT GROUP_CONCAT(DISTINCT pab.\`isbn\`) FROM product_audio_book AS pab \
+             JOIN audio_book_products AS abp ON pab.id = abp.product_id \
+             WHERE abp.audio_book_id = m.id) AS 'isbn[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT pab.\`for_sale\`) AS CHAR) FROM product_audio_book AS pab \
+             JOIN audio_book_products AS abp ON pab.id = abp.product_id \
+             WHERE abp.audio_book_id = m.id) AS 'for_sale[]', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
