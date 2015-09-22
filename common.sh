@@ -1620,7 +1620,7 @@ function getQueryForMusicSong()
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP BY m.album_id) AS 'restrict.country_code[]', \
-             (SELECT CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) \
+            (SELECT CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) \
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP By m.album_id) AS 'restrict.date[]', \
@@ -1653,8 +1653,8 @@ function getQueryForMusicSong()
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]', \
-            (SELECT licensor_name FROMlicensors AS l WHERE \
-             l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = ma.licensor_id) AS licensor_name \
+            (SELECT l.name FROM licensors AS l WHERE \
+             l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = ma.licensor_id) AS licensor_name, \
             (SELECT GROUP_CONCAT(CAST(CONCAT_WS('----', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id,\
              mfo.format, mfo.bitrate) AS CHAR)) \
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
