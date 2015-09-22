@@ -1632,7 +1632,7 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'analyzer_people.artist[]', \
-             (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_not_analyzed.artist[]', \
@@ -1653,6 +1653,8 @@ function getQueryForMusicSong()
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]', \
+            (SELECT licensor_name FROMlicensors AS l WHERE \
+             l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = ma.licensor_id) AS licensor_name \
             (SELECT GROUP_CONCAT(CAST(CONCAT_WS('----', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id,\
              mfo.format, mfo.bitrate) AS CHAR)) \
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
