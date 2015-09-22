@@ -1370,7 +1370,6 @@ function getQueryForAudioBook()
             m.data_source_provider_id, \
             m.data_origin_id, \
             m.img_url, \
-            m.abridgment, \
             m.size_in_bytes, \
             m.runtime, \
             m.duration, \
@@ -1393,7 +1392,7 @@ function getQueryForAudioBook()
             l.is_public, \
             l.name AS licensor_name, \
             CAST(GROUP_CONCAT(DISTINCT au.id) AS CHAR) AS 'people_id.author[]', \
-            CAST(GROUP_CONCAT(DISTINCT nar.id)AS CHAR) AS 'people_id.narrators[]', \
+            CAST(GROUP_CONCAT(DISTINCT nar.id) AS CHAR) AS 'people_id.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
             GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'analyzer_people.author[]', \
@@ -1411,8 +1410,22 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM audio_book_publishers AS bp \
+             JOIN publishers AS p ON p.id = bp.publisher_id \
+             WHERE bp.audio_book_id = m.id) AS 'publisher_name[]', \
             CAST(GROUP_CONCAT(CONCAT(mtscfe.membership_type_id, '-', mtscfe.site_id)) AS CHAR) \
              AS 'membership_type_site_exclusion_id[]', \
+            CASE \
+                WHEN abridgment = 'Abridged' THEN 'Abridged' \
+                WHEN abridgment = 'Unabridged' THEN 'Unabridged' \
+                ELSE '' \
+            END AS abridgment, \
+            (SELECT GROUP_CONCAT(DISTINCT pab.\`isbn\`) FROM product_audio_book AS pab \
+             JOIN audio_book_products AS abp ON pab.id = abp.product_id \
+             WHERE abp.audio_book_id = m.id) AS 'isbn[]', \
+            (SELECT CAST(GROUP_CONCAT(DISTINCT pab.\`for_sale\`) AS CHAR) FROM product_audio_book AS pab \
+             JOIN audio_book_products AS abp ON pab.id = abp.product_id \
+             WHERE abp.audio_book_id = m.id) AS 'for_sale[]', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
@@ -1654,7 +1667,7 @@ function getQueryForMusicSong()
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP BY m.album_id) AS 'restrict.country_code[]', \
-             (SELECT CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) \
+            (SELECT CAST(GROUP_CONCAT(mgr.date_start) AS CHAR) \
              FROM media_geo_restrict mgr \
              WHERE m.album_id = mgr.media_id AND mgr.status = 'active' AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
              GROUP By m.album_id) AS 'restrict.date[]', \
@@ -1666,7 +1679,7 @@ function getQueryForMusicSong()
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'analyzer_people.artist[]', \
-             (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(mar.\`name\`)) \
              FROM music_song_artists msa \
              JOIN music_artist mar On (mar.id = msa.artist_id) \
              WHERE msa.music_id = song_id GROUP BY m.id) AS 'people_not_analyzed.artist[]', \
@@ -1687,6 +1700,8 @@ function getQueryForMusicSong()
              JOIN genre_music gm ON (gm.id = mg.genre_id) \
              WHERE mg.music_id = m.id GROUP BY m.id) AS 'gracenote_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT region) FROM music_files WHERE music_id = m.id) AS 'restrict.song.country_code[]', \
+            (SELECT l.name FROM licensors AS l WHERE \
+             l.media_type = '${MUSIC_MUSIC_MEDIA_TYPE_NAME}' AND l.id = ma.licensor_id) AS licensor_name, \
             (SELECT GROUP_CONCAT(CAST(CONCAT_WS('----', mf.music_id, mf.format_id, mf.file, mf.region, mf.batch_id,\
              mfo.format, mfo.bitrate) AS CHAR)) \
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
