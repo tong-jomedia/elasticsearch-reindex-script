@@ -1355,6 +1355,8 @@ function getQueryForAudioBook()
 
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             CAST(CONCAT('${AUDIO_BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) AS media_id, \
@@ -1481,6 +1483,8 @@ function getQueryForBook()
     local batchSize=$2
     local query="\
         SELECT  0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             CAST(CONCAT('${BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) AS media_id, \
@@ -1603,6 +1607,8 @@ function getQueryForMusicSong()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             '1979-01-01' AS ma_release_date, \
             m.status AS licensor_status, \
             CAST(ma.id AS CHAR) AS id, \
@@ -1720,6 +1726,8 @@ function getQueryForMusicAlbum()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             CAST(CONCAT('${MUSIC_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) as id, \
             CAST(m.id AS CHAR) as media_id, \
@@ -1844,6 +1852,8 @@ function getQueryForMovie()
     local batchSize=$2
     local query="\
         SELECT m.*, \
+            0 AS ctr, \
+            0 AS vtr, \
             m.title AS analyzer_title, \
             CAST(CONCAT('${MOVIE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, mgr.restrict_type AS 'restrict.type', \
@@ -1930,6 +1940,8 @@ function getQueryForGame()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             CAST(CONCAT('${GAME_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
@@ -2003,6 +2015,8 @@ function getQueryForSoftware()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS vtr, \
             CAST(CONCAT('${SOFTWARE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
