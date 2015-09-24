@@ -1373,12 +1373,12 @@ function getQueryForAudioBook()
                 WHEN abridgment = 'Unabridged' THEN 'Unabridged' \
                 ELSE '' \
             END AS abridgment, \
-            (SELECT GROUP_CONCAT(DISTINCT pab.\`isbn\`) FROM product_audio_book AS pab \
+            (SELECT pab.\`isbn\ FROM product_audio_book AS pab \
              JOIN audio_book_products AS abp ON pab.id = abp.product_id \
-             WHERE abp.audio_book_id = m.id) AS 'isbn[]', \
-            (SELECT CAST(GROUP_CONCAT(DISTINCT pab.\`for_sale\`) AS CHAR) FROM product_audio_book AS pab \
+             WHERE abp.audio_book_id = m.id ORDER BY pab.for_sale DESC, pab.price ASC LIMIT 1) AS 'isbn', \
+            (SELECT CAST(MAX(pab.\`for_sale\`) AS CHAR) FROM product_audio_book AS pab \
              JOIN audio_book_products AS abp ON pab.id = abp.product_id \
-             WHERE abp.audio_book_id = m.id) AS 'for_sale[]', \
+             WHERE abp.audio_book_id = m.id) AS 'for_sale', \
             (SELECT mss.total_score FROM ${AUDIO_BOOK_SCORES} mss WHERE mss.device_type_id = ${PC_DEVICE_TYPE_ID} \
              AND mss.id = m.id) \
              AS 'sorting_score.${PC_DEVICE_TYPE_NAME}', \
