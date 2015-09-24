@@ -363,6 +363,7 @@ function getMappingForMusicSong()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -433,6 +434,7 @@ function getMappingForMusicAlbum()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -518,6 +520,7 @@ function getMappingForBook()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -611,6 +614,7 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -685,6 +689,7 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -750,6 +755,7 @@ function getMappingForSoftware()
                             "software_type" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -819,6 +825,7 @@ function getMappingForAudioBook()
                             "narrator" : {"type": "string"}
                         }
                     },
+                    "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
                         "include_in_parent" : true,
@@ -1308,6 +1315,8 @@ function getQueryForAudioBook()
 
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             CAST(CONCAT('${AUDIO_BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) AS media_id, \
@@ -1373,7 +1382,7 @@ function getQueryForAudioBook()
                 WHEN abridgment = 'Unabridged' THEN 'Unabridged' \
                 ELSE '' \
             END AS abridgment, \
-            (SELECT pab.\`isbn\ FROM product_audio_book AS pab \
+            (SELECT pab.\`isbn\` FROM product_audio_book AS pab \
              JOIN audio_book_products AS abp ON pab.id = abp.product_id \
              WHERE abp.audio_book_id = m.id ORDER BY pab.for_sale DESC, pab.price ASC LIMIT 1) AS 'isbn', \
             (SELECT CAST(MAX(pab.\`for_sale\`) AS CHAR) FROM product_audio_book AS pab \
@@ -1434,6 +1443,8 @@ function getQueryForBook()
     local batchSize=$2
     local query="\
         SELECT  0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             CAST(CONCAT('${BOOK_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) AS id, \
             CAST(m.id AS CHAR) AS media_id, \
@@ -1556,6 +1567,8 @@ function getQueryForMusicSong()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             '1979-01-01' AS ma_release_date, \
             m.status AS licensor_status, \
             CAST(ma.id AS CHAR) AS id, \
@@ -1673,6 +1686,8 @@ function getQueryForMusicAlbum()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             CAST(CONCAT('${MUSIC_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             CAST(m.id AS CHAR) as id, \
             CAST(m.id AS CHAR) as media_id, \
@@ -1797,6 +1812,8 @@ function getQueryForMovie()
     local batchSize=$2
     local query="\
         SELECT m.*, \
+            0 AS ctr, \
+            0 AS etr, \
             m.title AS analyzer_title, \
             CAST(CONCAT('${MOVIE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, mgr.restrict_type AS 'restrict.type', \
@@ -1883,6 +1900,8 @@ function getQueryForGame()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             CAST(CONCAT('${GAME_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
@@ -1956,6 +1975,8 @@ function getQueryForSoftware()
     local batchSize=$2
     local query="\
         SELECT 0 AS episode_id, \
+            0 AS ctr, \
+            0 AS etr, \
             CAST(CONCAT('${SOFTWARE_MEDIA_TYPE_ID}', '-', m.id) AS CHAR) AS _id, \
             l.status AS licensor_status, \
             l.is_public, \
