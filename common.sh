@@ -434,6 +434,8 @@ function getMappingForMusicAlbum()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -520,6 +522,8 @@ function getMappingForBook()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -614,6 +618,8 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -689,6 +695,8 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -755,6 +763,8 @@ function getMappingForSoftware()
                             "software_type" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -825,6 +835,8 @@ function getMappingForAudioBook()
                             "narrator" : {"type": "string"}
                         }
                     },
+                    "ctr" : {"type" : "double"},
+                    "etr" : {"type" : "double"},
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
