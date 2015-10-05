@@ -46,8 +46,8 @@ while true; do
             break;;
         [pP]* ) 
             echo "Reindex People"; 
-            importMedia "MusicAlbumArtist" "music_album_artists" "$ES_PEOPLE_INDEX" "seq_id" "music_album_artist"
-            importMedia "MusicSongArtist" "music_song_artists" "$ES_PEOPLE_INDEX" "seq_id" "music_song_artist"
+            importMedia "MusicAlbumArtist" "music_album_artists" "$ES_PEOPLE_INDEX" "seq_id" "music_artist"
+            importMedia "MusicSongArtist" "music_song_artists" "$ES_PEOPLE_INDEX" "seq_id" "music_artist"
             importMedia "BookAuthor" "author" "$ES_PEOPLE_INDEX" "id" "book_author"
             importMedia "BookArtist" "artists" "$ES_PEOPLE_INDEX" "id" "book_artist"
             importMedia "MovieActor" "actors" "$ES_PEOPLE_INDEX" "id" "movie_actor"

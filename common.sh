@@ -1289,8 +1289,8 @@ function getQueryForMusicAlbumArtist()
              a.data_origin_status, \
              CAST(a.id AS CHAR) AS people_id, \
              COUNT(maa.album_id) AS total_media \
-        FROM (SELECT * FROM music_album_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
-        JOIN music_artist AS a ON a.id = maa.artist_id \
+        FROM (SELECT * FROM music_artist WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS a \
+        JOIN music_album_artists AS maa ON a.id = maa.artist_id \
         GROUP BY a.id";
     echo "$query"
 }
@@ -1314,8 +1314,8 @@ function getQueryForMusicSongArtist()
              a.data_origin_status, \
              CAST(a.id AS CHAR) AS people_id, \
              COUNT(maa.music_id) AS total_media \
-        FROM (SELECT * FROM music_song_artists WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS maa \
-        JOIN music_artist AS a ON a.id = maa.artist_id \
+        FROM (SELECT * FROM music_artist WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS a \
+        JOIN music_song_artists AS maa ON a.id = maa.artist_id \
         GROUP By a.id";
     echo "$query"
 }
