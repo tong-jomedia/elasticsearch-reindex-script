@@ -378,6 +378,27 @@ function importMedia()
                         }
                     },
                     "analyzer": {
+                        "keyword_tokenizer_analyzer": {
+                            "type": "custom",
+                            "tokenizer": "keyword",
+                            "filter": [
+                                "lowercase"
+                            ]
+                        },
+                        "standard_tokenizer_analyzer": {
+                            "type": "custom",
+                            "tokenizer": "standard",
+                            "filter": [
+                                "lowercase"
+                            ]
+                        },
+                        "phonetic_tokenizer_analyzer": {
+                            "type": "custom",
+                            "tokenizer": "standard",
+                            "filter": [
+                                "phonetic"
+                            ]
+                        },
                         "mix_search": {
                             "tokenizer": "standard",
                             "filter": [
@@ -565,6 +586,23 @@ function getMappingForBook()
                         "properties" : {
                             "author" : {"type": "string"},
                             "artist" : {"type": "string"}
+                        }
+                    },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
                         }
                     },
                     "for_sale" : { "type" : "string"},
@@ -1100,6 +1138,23 @@ function getMappingForBookAuthor()
                         "type": "string",
                         "index": "not_analyzed"
                     },
+                    "name": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
+                    },
                     "id" : {
                         "type": "string",
                         "index": "not_analyzed"
@@ -1125,6 +1180,23 @@ function getMappingForMusicAlbumArtist()
     local mapping='"people_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "name": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
                     }
                     '
 
@@ -1137,6 +1209,23 @@ function getMappingForMusicSongArtist()
     local mapping='"people_id" : {
                         "type": "string",
                         "index": "not_analyzed"
+                    },
+                    "name": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
                     }
                     '
 
