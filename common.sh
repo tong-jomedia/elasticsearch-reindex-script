@@ -1650,6 +1650,7 @@ function getQueryForBook()
             GROUP_CONCAT(DISTINCT LOWER(au.\`name\`)) AS 'people_not_analyzed.author[]', \
             GROUP_CONCAT(DISTINCT LOWER(ar.\`name\`)) AS 'people_not_analyzed.artist[]', \
             GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gb.\`id\`)) AS 'genre_id[]', \
             GROUP_CONCAT(DISTINCT gb.\`name\`) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT scfe.site_id) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
@@ -1854,7 +1855,6 @@ function getQueryForMusicAlbum()
             m.supplier_id, \
             m.hide, \
             m.keyword, \
-            m.genre_id, \
             m.licensor_id, \
             m.format, \
             m.featured_instruments, \
@@ -1896,6 +1896,9 @@ function getQueryForMusicAlbum()
              LEFT JOIN music_artist AS ma ON ma.id = maa.artist_id WHERE m.id = maa.album_id) AS 'people.artist_id[]', \
             (SELECT dsp.\`name\` FROM data_source_provider AS dsp WHERE dsp.id = m.data_source_provider_id) \
              AS data_source_provider_name, \
+            (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`id\`)) FROM music_album_genres AS mag \
+             LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
+             WHERE mag.album_id = m.id ) AS 'genre_id[]', \
             (SELECT GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) FROM music_album_genres AS mag \
              LEFT JOIN genre_music AS gm ON gm.id = mag.genre_id \
              WHERE mag.album_id = m.id ) AS 'genre[]', \
@@ -1976,6 +1979,7 @@ function getQueryForMovie()
             GROUP_CONCAT(DISTINCT LOWER(pr.\`name\`)) AS 'people_not_analyzed.producer[]', \
             GROUP_CONCAT(DISTINCT LOWER(wr.\`name\`)) AS 'people_not_analyzed.writer[]', \
             GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gm.\`id\`)) AS 'genre_id[]', \
             GROUP_CONCAT(DISTINCT LOWER(gm.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
@@ -2055,6 +2059,7 @@ function getQueryForGame()
             GROUP_CONCAT(DISTINCT gy.\`CategoryName\`) AS 'category.name[]', \
             GROUP_CONCAT(DISTINCT gy.\`OS\`) AS 'category.os[]', \
             GROUP_CONCAT(DISTINCT LOWER(gga.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(gga.\`id\`)) AS 'genre_id[]', \
             GROUP_CONCAT(DISTINCT LOWER(gga.\`name\`)) AS 'analyzer_genre[]', \
             CAST(GROUP_CONCAT(DISTINCT gt.type_id) AS CHAR) AS 'game_type[]', \
             GROUP_CONCAT(DISTINCT ts.\`name\`) AS 'game_type_name[]', \
@@ -2130,6 +2135,7 @@ function getQueryForSoftware()
             GROUP_CONCAT(DISTINCT LOWER(st.\`name\`)) AS 'people_not_analyzed.softwareType[]', \
             GROUP_CONCAT(DISTINCT st_platform.\`name\`) AS 'software_platform[]', \
             GROUP_CONCAT(DISTINCT LOWER(sc.\`name\`)) AS 'genre[]', \
+            GROUP_CONCAT(DISTINCT LOWER(sc.\`id\`)) AS 'genre_id[]', \
             GROUP_CONCAT(DISTINCT LOWER(sc.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'content_segments[]', \
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
