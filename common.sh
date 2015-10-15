@@ -431,6 +431,23 @@ function getMappingForMusicSong()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
+                    },
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -500,6 +517,23 @@ function getMappingForMusicAlbum()
                         "include_in_parent" : true,
                         "properties" : {
                             "artist" : {"type": "string"}
+                        }
+                    },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
                         }
                     },
                     "for_sale" : { "type" : "string"},
@@ -699,6 +733,23 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
+                    },
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -774,6 +825,23 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
+                        }
+                    },
                     "for_sale" : { "type" : "string"},
                     "people_not_analyzed" : {
                         "type" : "nested",
@@ -838,6 +906,23 @@ function getMappingForSoftware()
                         "include_in_parent" : true,
                         "properties" : {
                             "software_type" : {"type": "string"}
+                        }
+                    },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
                         }
                     },
                     "for_sale" : { "type" : "string"},
@@ -908,6 +993,23 @@ function getMappingForAudioBook()
                         "properties" : {
                             "author" : {"type": "string"},
                             "narrator" : {"type": "string"}
+                        }
+                    },
+                    "title": {
+                        "type": "string",
+                        "fields": {
+                            "raw": {
+                                "type": "string",
+                                "analyzer": "keyword_tokenizer_analyzer"
+                            },
+                            "keyword": {
+                                "type": "string",
+                                "analyzer": "standard_tokenizer_analyzer"
+                            },
+                            "phonetic": {
+                                "type": "string",
+                                "analyzer": "phonetic_tokenizer_analyzer"
+                            }
                         }
                     },
                     "for_sale" : { "type" : "string"},
