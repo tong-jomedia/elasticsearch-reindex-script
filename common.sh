@@ -1384,6 +1384,8 @@ function getQueryForAudioBook()
             GROUP_CONCAT(DISTINCT cf.\`name\`) AS 'analyzer_content_segments[]', \
             CAST(GROUP_CONCAT(DISTINCT scfe.site_id) AS CHAR) AS 'site_exclusion_id[]', \
             GROUP_CONCAT(DISTINCT mal.\`name\`) AS 'languages[]', \
+            (SELECT \`name\` FROM data_source_provider 
+             WHERE id = m.data_source_provider_id) AS data_source_provider_name, \
             (SELECT GROUP_CONCAT(DISTINCT p.\`name\`) FROM audio_book_publishers AS bp \
              JOIN publishers AS p ON p.id = bp.publisher_id \
              WHERE bp.audio_book_id = m.id) AS 'publisher_name[]', \
