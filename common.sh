@@ -1096,6 +1096,23 @@ function getPeopleMapping()
                     "type": "string",
                     "index": "not_analyzed"
                 },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
+                },
                 "analyzer_name": {
                     "type": "string",
                     "analyzer": "mix_search"
@@ -1111,6 +1128,23 @@ function getPeopleMapping()
                 "id" : {
                     "type": "string",
                     "index": "not_analyzed"
+                },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
                 },
                 "analyzer_name": {
                     "type": "string",
@@ -1128,6 +1162,23 @@ function getPeopleMapping()
                     "type": "string",
                     "index": "not_analyzed"
                 },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
+                },
                 "analyzer_name": {
                     "type": "string",
                     "analyzer": "mix_search"
@@ -1144,6 +1195,23 @@ function getPeopleMapping()
                     "type": "string",
                     "index": "not_analyzed"
                 },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
+                },
                 "analyzer_name": {
                     "type": "string",
                     "analyzer": "mix_search"
@@ -1155,6 +1223,23 @@ function getPeopleMapping()
                 "people_id" : {
                     "type": "string",
                     "index": "not_analyzed"
+                },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
                 },
                 "id" : {
                     "type": "string",
@@ -1176,6 +1261,23 @@ function getPeopleMapping()
                     "type": "string",
                     "index": "not_analyzed"
                 },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
+                },
                 "analyzer_name": {
                     "type": "string",
                     "analyzer": "mix_search"
@@ -1191,6 +1293,23 @@ function getPeopleMapping()
                 "id" : {
                     "type": "string",
                     "index": "not_analyzed"
+                },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
                 },
                 "analyzer_name": {
                     "type": "string",
@@ -1208,6 +1327,23 @@ function getPeopleMapping()
                     "type": "string",
                     "index": "not_analyzed"
                 },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
+                },
                 "analyzer_name": {
                     "type": "string",
                     "analyzer": "mix_search"
@@ -1223,6 +1359,23 @@ function getPeopleMapping()
                 "id" : {
                     "type": "string",
                     "index": "not_analyzed"
+                },
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "analyzer": "keyword_tokenizer_analyzer"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "analyzer": "standard_tokenizer_analyzer"
+                        },
+                        "phonetic": {
+                            "type": "string",
+                            "analyzer": "phonetic_tokenizer_analyzer"
+                        }
+                    }
                 },
                 "analyzer_name": {
                     "type": "string",
