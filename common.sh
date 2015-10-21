@@ -881,13 +881,6 @@ function getMappingForAudioBook()
                         "type" : "string", 
                         "index": "not_analyzed"
                     },
-                    "sorting_score" : {
-                        "type" : "nested",
-                        "include_in_parent" : true,
-                        "properties" : {
-                            "pc" : {"type": "string"}
-                        }
-                    },
                     "membership_exclusion" : {
                         "type" : "nested",
                         "include_in_parent": true,
