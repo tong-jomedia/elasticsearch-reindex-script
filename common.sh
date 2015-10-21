@@ -846,6 +846,27 @@ function getMappingForAudioBook()
                             "narrator" : {"type": "string", index: "not_analyzed"}
                         }
                     },
+                    "sorting_score" : {
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "console" : {
+                                "type" : "double"
+                            },
+                            "tablet" : {
+                                "type" : "double"
+                            },
+                            "pc" : {
+                                "type" : "double"
+                            },
+                            "mac" : {
+                                "type" : "double"
+                            },
+                            "mobile" : {
+                                "type" : "double"
+                            }
+                        },
+                        "type" : "nested"
+                    },
                     "languages" : {"type" : "string"},
                     "language_codes" : {
                         "type" : "string",
