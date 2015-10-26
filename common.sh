@@ -2064,7 +2064,7 @@ function getQueryForMusicSong()
              mfo.format, mfo.bitrate) AS CHAR)) \
              FROM music_files mf JOIN audio_format AS mfo ON mf.format_id = mfo.id WHERE music_id = m.id) AS 'country_available[]' \
             FROM music m \
-            JOIN music_album AS ma ON m.album_id = ma.id \
+            JOIN music_album AS ma ON m.album_id = ma.id AND ma.status = 'active' \
             LEFT JOIN ${MUSIC_SCORES} AS mss \
                 ON mss.id = ma.id AND mss.device_type_id = ${DEFAULT_DEVICE_ID} \
             LEFT JOIN data_source_provider AS dsp ON dsp.id = ma.data_source_provider_id \
@@ -2185,7 +2185,7 @@ function getQueryForMusicAlbum()
             (SELECT mss.total_score FROM ${MUSIC_SCORES} mss WHERE mss.device_type_id = ${CONSOLE_DEVICE_TYPE_ID} \
              AND mss.id = m.id ) \
              AS 'sorting_score.${CONSOLE_DEVICE_TYPE_NAME}' \
-        FROM (SELECT * FROM music_album WHERE seq_id >= ${offset} AND seq_id < ${batchSize}) AS m \
+        FROM (SELECT * FROM music_album WHERE seq_id >= ${offset} AND seq_id < ${batchSize} AND status = 'active') AS m \
         LEFT JOIN ${MEDIA_GEO_RESTRICT_TABLE_NAME} AS mgr \
             ON m.id = mgr.media_id AND mgr.status = 'active' \
             AND mgr.media_type = ${MUSIC_MEDIA_TYPE_ID} \
