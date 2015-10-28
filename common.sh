@@ -1745,13 +1745,13 @@ function getQueryForAudioBook()
             l.is_public, \
             l.name AS licensor_name, \
             CAST(GROUP_CONCAT(DISTINCT au.id) AS CHAR) AS 'people_id.author[]', \
-            CAST(GROUP_CONCAT(DISTINCT nar.id) AS CHAR) AS 'people_id.narrators[]', \
+            CAST(GROUP_CONCAT(DISTINCT nar.id) AS CHAR) AS 'people_id.narrator[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'people.author[]', \
-            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrators[]', \
+            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'people.narrator[]', \
             GROUP_CONCAT(DISTINCT au.\`name\`) AS 'analyzer_people.author[]', \
-            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'analyzer_people.narrators[]', \
+            GROUP_CONCAT(DISTINCT nar.\`name\`) AS 'analyzer_people.narrator[]', \
             GROUP_CONCAT(DISTINCT LOWER(au.\`name\`)) AS 'people_not_analyzed.author[]', \
-            GROUP_CONCAT(DISTINCT LOWER(nar.\`name\`)) AS 'people_not_analyzed.narrators[]', \
+            GROUP_CONCAT(DISTINCT LOWER(nar.\`name\`)) AS 'people_not_analyzed.narrator[]', \
             GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'genre[]', \
             GROUP_CONCAT(DISTINCT LOWER(gb.\`name\`)) AS 'analyzer_genre[]', \
             GROUP_CONCAT(DISTINCT awa.\`name\`) AS 'awards[]', \
