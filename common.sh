@@ -431,6 +431,14 @@ function getMappingForMusicSong()
                             "artist" : {"type": "string"}
                         }
                     },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
                     "title": {
                         "type": "string",
                         "fields": {
@@ -518,6 +526,14 @@ function getMappingForMusicAlbum()
                         "properties" : {
                             "artist" : {"type": "string"}
                         }
+                    },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
                     },
                     "title": {
                         "type": "string",
@@ -621,6 +637,14 @@ function getMappingForBook()
                             "author" : {"type": "string"},
                             "artist" : {"type": "string"}
                         }
+                    },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
                     },
                     "title": {
                         "type": "string",
@@ -733,6 +757,14 @@ function getMappingForMovie()
                             "writer" : {"type": "string"}
                         }
                     },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
                     "title": {
                         "type": "string",
                         "fields": {
@@ -825,6 +857,14 @@ function getMappingForGame()
                             "developer" : {"type": "string"}
                         }
                     },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
                     "title": {
                         "type": "string",
                         "fields": {
@@ -907,6 +947,14 @@ function getMappingForSoftware()
                         "properties" : {
                             "software_type" : {"type": "string"}
                         }
+                    },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
                     },
                     "title": {
                         "type": "string",
@@ -994,6 +1042,14 @@ function getMappingForAudioBook()
                             "author" : {"type": "string"},
                             "narrator" : {"type": "string"}
                         }
+                    },
+                    "ctr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
+                    },
+                    "etr" : {
+                        "type": "double",
+                        "index": "not_analyzed"
                     },
                     "title": {
                         "type": "string",
