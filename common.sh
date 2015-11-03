@@ -640,11 +640,13 @@ function getMappingForBook()
                     },
                     "ctr" : {
                         "type": "double",
-                        "index": "not_analyzed"
+                        "index": "not_analyzed",
+                        "precision_step": 20
                     },
                     "etr" : {
                         "type": "double",
-                        "index": "not_analyzed"
+                        "index": "not_analyzed",
+                        "precision_step": 20
                     },
                     "title": {
                         "type": "string",
