@@ -638,11 +638,11 @@ function getMappingForBook()
                     },
                     "ctr" : {
                         "type": "double",
-                        "precision_step": 20
+                        "precision_step": 40
                     },
                     "etr" : {
                         "type": "double",
-                        "precision_step": 20
+                        "precision_step": 40
                     },
                     "title": {
                         "type": "string",
