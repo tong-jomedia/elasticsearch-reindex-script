@@ -11,7 +11,7 @@ while true; do
     case $reindexMedia in
         [bB]* ) 
             echo "Reindex Book"; 
-            importMedia "Book" "book" "$ES_BOOK_INDEX"; 
+            importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id"; 
             checkReindexFinshed "$ES_BOOK_INDEX" "media"
             compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
             allSaveIndexes="${ENV_PREFIX}index_${ES_BOOK_INDEX}_v${nextIndexVersion}"
