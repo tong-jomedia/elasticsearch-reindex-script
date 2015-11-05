@@ -432,12 +432,10 @@ function getMappingForMusicSong()
                         }
                     },
                     "ctr" : {
-                        "type": "double",
-                        "index": "not_analyzed"
+                        "type": "double"
                     },
                     "etr" : {
-                        "type": "double",
-                        "index": "not_analyzed"
+                        "type": "double"
                     },
                     "title": {
                         "type": "string",
@@ -639,14 +637,10 @@ function getMappingForBook()
                         }
                     },
                     "ctr" : {
-                        "type": "double",
-                        "index": "not_analyzed",
-                        "precision_step": 20
+                        "type": "double"
                     },
                     "etr" : {
-                        "type": "double",
-                        "index": "not_analyzed",
-                        "precision_step": 20
+                        "type": "double"
                     },
                     "title": {
                         "type": "string",
