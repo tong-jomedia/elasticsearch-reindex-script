@@ -12,6 +12,7 @@ while true; do
         [bB]* ) 
             echo "Reindex Book"; 
             importMedia "Book" "book" "$ES_BOOK_INDEX"; 
+            checkReindexFinshed "$ES_BOOK_INDEX" "media"
             compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
             allSaveIndexes="${ENV_PREFIX}index_${ES_BOOK_INDEX}_v${nextIndexVersion}"
             saveToS3Snapshot "$allSaveIndexes"
