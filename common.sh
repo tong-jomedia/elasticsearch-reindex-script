@@ -637,10 +637,12 @@ function getMappingForBook()
                         }
                     },
                     "ctr" : {
-                        "type": "double"
+                        "type": "double",
+                        "precision_step": 20
                     },
                     "etr" : {
-                        "type": "double"
+                        "type": "double",
+                        "precision_step": 20
                     },
                     "title": {
                         "type": "string",
