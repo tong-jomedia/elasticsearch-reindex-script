@@ -11,7 +11,7 @@ while true; do
     case $reindexMedia in
         [bB]* ) 
             echo "Reindex Book"; 
-            importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id"; 
+            importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id" "" 10000; 
             compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
             break;;
         [mM]a* ) 
@@ -41,7 +41,7 @@ while true; do
             break;;
         [aA]b* ) 
             echo "Reindex Audio Book"; 
-            importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 1000
+            importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 5000
             compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX"
             break;;
         [pP]* ) 

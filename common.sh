@@ -9,6 +9,23 @@ function getIndexVersionByFile()
     fi
     echo "$currentIndexVersion"
 }
+function getIndexVersionByIndexName()
+{
+    local mediaIndex='index_'$1
+    local allIndexes=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_cat/indices/'${ENV_PREFIX}${mediaIndex}'*' | grep -Po ${ENV_PREFIX}${mediaIndex}'_v(\d+)')
+    allIndexes=$(echo $allIndexes | tr "\n\r" "\n\r")
+    local currentIndexVersion=0
+    for oneIndex in $allIndexes 
+    do
+        local version=$(echo $oneIndex | grep -o '[0-9]*')
+        if [ "$version" -ge "$currentIndexVersion" ]
+        then
+            currentIndexVersion=$version
+        fi
+    done
+    echo "$currentIndexVersion"
+}
+
 function getIndexVersion()
 {
     local mediaIndex=$ES_SOFTWARE_INDEX 
@@ -84,9 +101,10 @@ function deleteIndexByVersion()
 function deleteAllPreviousIndexesByMedia()
 {	
     local mediaIndex=($1)
-    local nextVersionIndex="${ENV_PREFIX}index_${mediaIndex}_v${nextIndexVersion}"
+    local indexVersionNext=($2)
+    local nextVersionIndex="${ENV_PREFIX}index_${mediaIndex}_v${indexVersionNext}"
     local allPreviousIndexes=$(getAllPreviousIndexesByMedia "$mediaIndex")
-    echo $nextVersionIndex
+    echo $indexVersionNext
     for onePreviousIndex in $allPreviousIndexes 
     do
         if [ "$onePreviousIndex" != "$nextVersionIndex" ]
@@ -97,6 +115,15 @@ function deleteAllPreviousIndexesByMedia()
             curl -XDELETE $ES_HOST':'$ES_PORT'/'$onePreviousIndex
         fi
     done
+}
+function deleteNewIndexesByMedia()
+{	
+    local mediaIndex=($1)
+    local nextVersionIndex="${ENV_PREFIX}index_${mediaIndex}_v${2}"
+    curl -XDELETE $ES_HOST':'$ES_PORT'/_river/river_'$nextVersionIndex'*/'
+    curl -XGET $ES_HOST':'$ES_PORT'/_river/_refresh'
+    sleep 1m
+    curl -XDELETE $ES_HOST':'$ES_PORT'/'$nextVersionIndex
 }
 
 function getAllPreviousIndexesByMedia()
@@ -163,8 +190,10 @@ function compareIndexCountSwitchAlias()
 {
     local exitChecking=0
     local indexPrefix=$1
-    local indexCurrent="${ENV_PREFIX}index_${indexPrefix}_v${currentIndexVersion}"
-    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}"
+    local indexVersionNext=$(getIndexVersionByIndexName $indexPrefix)
+    local indexVersionCurrent=$((indexVersionNext - 1))
+    local indexCurrent="${ENV_PREFIX}index_${indexPrefix}_v${indexVersionCurrent}"
+    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${indexVersionNext}"
 
 #    echo $indexCurrent
 #    echo $indexNext
@@ -186,10 +215,12 @@ function compareIndexCountSwitchAlias()
 
         echo $currentIndexCount
         echo $nextIndexCount
+#        halfOfCurrentIndex=$((currentIndexCount / 2))
+#        if [ "$nextIndexCount" -ge "$halfOfCurrentIndex" ] 
         if [ "$nextIndexCount" -ge "$currentIndexCount" ] 
         then
-            switchAliasByIndex "$indexPrefix"
-            deleteAllPreviousIndexesByMedia "$indexPrefix"
+            switchAliasByIndex "$indexPrefix" "$indexVersionNext"
+            deleteAllPreviousIndexesByMedia "$indexPrefix" "$indexVersionNext"
             exitChecking=1
         fi
 
@@ -198,12 +229,49 @@ function compareIndexCountSwitchAlias()
         then
             if [ "$nextIndexCount" -ne 0 ] 
             then
-                switchAliasByIndex "$indexPrefix"
-                deleteAllPreviousIndexesByMedia "$indexPrefix"
+                switchAliasByIndex "$indexPrefix" "$indexVersionNext"
+                deleteAllPreviousIndexesByMedia "$indexPrefix" "$indexVersionNext"
+                sendEmailByMandrill "zt1983811@gmail.com" "CAPI index v2 $indexPrefix may have problem on version $indexVersionNext on $(TZ=America/Montreal date '+%Y-%m-%d %H:%M:%S')" "CAPI index for $indexPrefix will stay at version $indexVersionCurrent from old" 
+ 
             fi
+            deleteNewIndexesByMedia "$indexPrefix" "$indexVersionNext"
+            sendEmailByMandrill "$FAIL_NOTIFICATION_EMAILS" "CAPI index v2 $indexPrefix is failed on version $indexVersionNext on $(TZ=America/Montreal date '+%Y-%m-%d %H:%M:%S')" "CAPI index for $indexPrefix will stay at version $indexVersionCurrent from old" 
             exitChecking=1
         fi
     done
+}
+
+function sendEmailByMandrill()
+{
+    local key=$MANDRILL_API_KEY
+    local from_email=$MANDRILL_FROM_EMAIL
+    local reply_to=$MANDRILL_FROM_EMAIL
+    local from_name=$MANDRILL_FROM_NAME
+    local emails=$(echo $1 | tr "," "\n")
+    local emailJson=""
+    for oneEmail in $emails
+    do
+        if [ -z "$emailJson" ]; then
+            emailJson='{"email": "'$oneEmail'", "type": "to"}'
+        else
+            emailJson=$emailJson',{"email": "'$oneEmail'", "type": "to"}'
+        fi
+    done
+
+    if [ $# -eq 3 ]; then
+        msg='{ "async": false, "key": "'$key'", "message": { "from_email": "'$from_email'", "from_name": "'$from_name'", "headers": { "Reply-To": "'$reply_to'" }, "return_path_domain": null, "subject": "'$2'", "text": "'$3'", "to": [ '$emailJson' ] } }'
+        results=$(curl -A 'Mandrill-Curl/1.0' -d "$msg" 'https://mandrillapp.com/api/1.0/messages/send.json' -s 2>&1);
+        echo "$results" | grep "sent" -q;
+        if [ $? -ne 0 ]; then
+            echo "An error occured: $results";
+            exit 2;
+        fi
+    else
+    echo "$0 requires 3 arguments - to address, subject, content";
+    echo "Example: ./$0 \"to-address@mail-address.com\" \"test\" \"hello this is a test message\""
+    exit 1;
+    fi
+
 }
 
 function getCountOfIndex()
@@ -216,9 +284,10 @@ function getCountOfIndex()
 function switchAliasByIndex()
 {
     local indexPrefix=$1
+    local indexVersionNext=$2
     local alias="${ENV_PREFIX}all_media_${indexPrefix}"
     local indexPrev="${ENV_PREFIX}index_${indexPrefix}*"
-    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${nextIndexVersion}"
+    local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${indexVersionNext}"
     curl -XPOST $ES_HOST':'$ES_PORT'/_aliases' -d '{
         "actions": [
             {"remove": {
@@ -256,7 +325,9 @@ function importMedia()
 {
     local mediaTypeName=$1
     local mediaTableName=$2
-    local indexName="${ENV_PREFIX}index_${3}_v${nextIndexVersion}" 
+    local indexVersionCurrent=$(getIndexVersionByIndexName $3)
+    local indexVersionNext=$((indexVersionCurrent + 1))
+    local indexName="${ENV_PREFIX}index_${3}_v${indexVersionNext}" 
     local keyName=$4
     if [ -z "$5" ]; then
         local indexType="media"
@@ -728,6 +799,32 @@ function getMappingForGame()
                         "type": "date",
                         "format" : "dateOptionalTime"
                     },
+                    "sorting_score" : {
+                        "include_in_parent" : true,
+                        "properties" : {
+                            "console" : {
+                                "type" : "double",
+                                "null_value" : 0
+                            },
+                            "tablet" : {
+                                "type" : "double",
+                                "null_value" : 0
+                            },
+                            "pc" : {
+                                "type" : "double",
+                                "null_value" : 0
+                            },
+                            "mac" : {
+                                "type" : "double",
+                                "null_value" : 0
+                            },
+                            "mobile" : {
+                                "type" : "double",
+                                "null_value" : 0
+                            }
+                        },
+                        "type" : "nested"
+                    },
                     "analyzer_title": {
                         "type": "string",
                         "analyzer": "mix_search"
@@ -880,13 +977,6 @@ function getMappingForAudioBook()
                     "id" : {
                         "type" : "string", 
                         "index": "not_analyzed"
-                    },
-                    "sorting_score" : {
-                        "type" : "nested",
-                        "include_in_parent" : true,
-                        "properties" : {
-                            "pc" : {"type": "string"}
-                        }
                     },
                     "membership_exclusion" : {
                         "type" : "nested",
