@@ -186,6 +186,36 @@ function getMapping()
     echo "$singleMapping"
 }
 
+function checkReindexFinshed
+{
+    local indexPrefix=$1
+    local indexType=$2
+    local indexVersion=$3
+    local exitChecking=0
+    local timeOutCounter=0
+    local indexName="${ENV_PREFIX}river_index_${indexPrefix}_v${indexVersion}_${indexType}"
+    while [ $exitChecking -ne 1 ]
+    do
+        sleep $CHECK_INTERVAL
+        timeOutCounter=$((timeOutCounter + CHECK_INTERVAL))
+        finishedTime=$(curl -s -XGET $ES_HOST':'$ES_PORT'/_river/jdbc/'$indexName'/_state' | grep -Po '(?<="last_active_end":")[^"]*') 
+        if [ ! -z "$finishedTime" ] 
+        then
+            exitChecking=1
+            echo "Re-indexing finished, finshing time is: ${finishedTime}"
+        else
+            echo "Re-indexing in process... time spend: ${timeOutCounter} seconds"
+
+            #check time out
+#            if [ "$timeOutCounter" -ge "$MAX_TIMEOUT_CHECK" ]
+#            then
+#                exitChecking=1
+#                #todo need send warning message or maybe need to exit from the script
+#            fi
+        fi
+    done
+}
+
 function compareIndexCountSwitchAlias()
 {
     local exitChecking=0
@@ -194,6 +224,9 @@ function compareIndexCountSwitchAlias()
     local indexVersionCurrent=$((indexVersionNext - 1))
     local indexCurrent="${ENV_PREFIX}index_${indexPrefix}_v${indexVersionCurrent}"
     local indexNext="${ENV_PREFIX}index_${indexPrefix}_v${indexVersionNext}"
+
+    checkReindexFinshed "$indexPrefix" "$2" "$indexVersionNext"
+
 
 #    echo $indexCurrent
 #    echo $indexNext

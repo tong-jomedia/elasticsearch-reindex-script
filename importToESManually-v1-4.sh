@@ -12,37 +12,37 @@ while true; do
         [bB]* ) 
             echo "Reindex Book"; 
             importMedia "Book" "book" "$ES_BOOK_INDEX" "seq_id" "" 10000; 
-            compareIndexCountSwitchAlias "$ES_BOOK_INDEX"
+            compareIndexCountSwitchAlias "$ES_BOOK_INDEX" "media"
             break;;
         [mM]a* ) 
             echo "Reindex Music Album"; 
             importMedia "MusicAlbum" "music_album" "$ES_MUSIC_ALBUM_INDEX" "seq_id";
-            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_ALBUM_INDEX" "media"
             break;;
         [mM]s* ) 
             echo "Reindex Music Song"; 
             importMedia "MusicSong" "music" "$ES_MUSIC_SONG_INDEX" "seq_id";
-            compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX"
+            compareIndexCountSwitchAlias "$ES_MUSIC_SONG_INDEX" "media"
             break;;
         [mM]o* ) 
             echo "Reindex Movie"; 
             importMedia "Movie" "movie" "$ES_MOVIE_INDEX" "id";
-            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX"
+            compareIndexCountSwitchAlias "$ES_MOVIE_INDEX" "media"
             break;;
         [gG]* ) 
             echo "Reindex Game"; 
             importMedia "Game" "game" "$ES_GAME_INDEX" "id";
-            compareIndexCountSwitchAlias "$ES_GAME_INDEX"
+            compareIndexCountSwitchAlias "$ES_GAME_INDEX" "media"
             break;;
         [sS]* ) 
             echo "Reindex Software"; 
             importMedia "Software" "software" "$ES_SOFTWARE_INDEX" "id";
-            compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX"
+            compareIndexCountSwitchAlias "$ES_SOFTWARE_INDEX" "media"
             break;;
         [aA]b* ) 
             echo "Reindex Audio Book"; 
             importMedia "AudioBook" "audio_book" "$ES_AUDIO_BOOK_INDEX" "seq_id" "" 5000
-            compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX"
+            compareIndexCountSwitchAlias "$ES_AUDIO_BOOK_INDEX" "media"
             break;;
         [pP]* ) 
             echo "Reindex People"; 
